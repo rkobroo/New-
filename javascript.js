@@ -136,13 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const qualities = ["mp3", "360p", "720p", "1080p"];
         qualities.forEach(quality => {
             const downloadUrl = `${backendUrl}?url=${encodeURIComponent(inputUrl)}`;
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = '';
-            link.target = '_blank';
-            link.rel = 'noopener noreferrer';
-            link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${sanitizeContent(quality)}</button>`;
-            downloadContainer.appendChild(link);
+            fetch(downloadUrl, { method: 'HEAD' }) // Check if the URL is valid
+                .then(response => {
+                    if (response.ok) {
+                        const link = document.createElement('a');
+                        link.href = downloadUrl;
+                        link.download = '';
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${sanitizeContent(quality)}</button>`;
+                        downloadContainer.appendChild(link);
+                    } else {
+                        displayError(`Download failed for ${quality}: ${response.statusText}`);
+                    }
+                })
+                .catch(error => {
+                    displayError(`Error checking download link: ${error.message}`);
+                });
         });
 
         if (downloadContainer.innerHTML.trim() === "") {
