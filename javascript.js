@@ -16,8 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Download button clicked');
         const loading = document.getElementById('loading');
         const btn = document.getElementById('downloadBtn');
+        const container = document.getElementById('container');
         if (loading) loading.style.display = 'initial';
         if (btn) btn.disabled = true;
+        if (container) container.style.display = 'none'; // Reset container
 
         const inputUrl = document.getElementById('inputUrl')?.value.trim();
         if (!inputUrl) {
@@ -78,16 +80,18 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Handling download for:', videoId, 'with URL:', inputUrl);
         const loading = document.getElementById('loading');
         const btn = document.getElementById('downloadBtn');
+        const container = document.getElementById('container');
         const infoUrl = `http://localhost:3000/info?url=${encodeURIComponent(inputUrl)}`;
 
         fetch(infoUrl)
             .then(response => {
-                console.log('Fetch response status:', response.status);
+                console.log('Fetch response status:', response.status, 'URL:', infoUrl);
                 if (!response.ok) throw new Error(`Info fetch failed: ${response.statusText}`);
                 return response.json();
             })
             .then(info => {
-                console.log('Video info:', info);
+                console.log('Video info received:', info);
+                if (container) container.style.display = 'block';
                 const thumbnailUrl = info.thumbnail || '';
                 const videoHtml = `
                     <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
@@ -106,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => {
                 console.error('Fetch error:', error);
+                if (container) container.style.display = 'block';
                 displayError(`Failed to load video info: ${error.message}`);
                 updateElement('thumb', '<p>Thumbnail unavailable</p>');
                 updateElement('title', '<h3>Untitled</h3>');
@@ -118,4 +123,56 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
         function updateElement(elementId, content) {
-            const element = document.getElementById(elementId
+            const element = document.getElementById(elementId);
+            if (element) element.innerHTML = content;
+            else console.warn(`Element with ID "${elementId}" not found.`);
+        }
+
+        function generateDownloadButtonsClientSide(videoId, inputUrl) {
+            console.log('Generating buttons for:', videoId, 'with URL:', inputUrl);
+            const downloadContainer = document.getElementById('download');
+            if (!downloadContainer) {
+                console.error('Download container not found!');
+                return;
+            }
+            downloadContainer.innerHTML = '';
+
+            const backendUrl = 'http://localhost:3000/download';
+            const qualities = ['mp3', '360p', '720p', '1080p'];
+            qualities.forEach(quality => {
+                const downloadUrl = `${backendUrl}?url=${encodeURIComponent(inputUrl)}`;
+                const link = document.createElement('a');
+                link.href = '#';
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    fetch(downloadUrl)
+                        .then(response => {
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `video_${quality}.mp4`;
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                        })
+                        .catch(error => {
+                            displayError(`Download failed for ${quality}: ${error.message}`);
+                        });
+                });
+                link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${quality}</button>`;
+                downloadContainer.appendChild(link);
+            });
+        }
+
+        function getBackgroundColor(quality) {
+            if (formatColors.greenFormats.includes(quality)) return 'green';
+            if (formatColors.blueFormats.includes(quality)) return '#3800ff';
+            return formatColors.defaultColor;
+        }
+    }
+});
