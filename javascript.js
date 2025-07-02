@@ -107,24 +107,38 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("container").style.display = "block";
         document.getElementById("loading").style.display = "none";
 
-        const thumbnailUrl = videoId.includes('youtube.com') || videoId.includes('youtu.be') 
-            ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
-            : '';
-        const videoHtml = `
-            <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
-                   poster='${thumbnailUrl}' controls playsinline>
-                <source src='${inputUrl}' type='video/mp4'>
-            </video>`;
-        const titleHtml = `<h3>Video Title (Placeholder)</h3>`;
-        const descriptionHtml = `<h4><details><summary>View Description</summary>Description (Placeholder)</details></h4>`;
-        const durationHtml = `<h5>Size (Placeholder)</h5>`;
+        const infoUrl = `http://localhost:3000/info?url=${encodeURIComponent(inputUrl)}`;
+        fetch(infoUrl)
+            .then(response => {
+                if (!response.ok) throw new Error(`Info fetch failed: ${response.statusText}`);
+                return response.json();
+            })
+            .then(info => {
+                const thumbnailUrl = info.thumbnail || '';
+                const videoHtml = `
+                    <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
+                           poster='${thumbnailUrl}' controls playsinline>
+                        <source src='${inputUrl}' type='video/mp4'> <!-- Placeholder, needs backend stream -->
+                    </video>`;
+                const titleHtml = `<h3>${sanitizeContent(info.title || 'Untitled')}</h3>`;
+                const descriptionHtml = `<h4><details><summary>View Description</summary>Description (Placeholder)</details></h4>`;
+                const durationHtml = `<h5>${info.duration || 'N/A'}</h5>`;
 
-        updateElement("thumb", videoHtml);
-        updateElement("title", titleHtml);
-        updateElement("description", descriptionHtml);
-        updateElement("duration", durationHtml);
+                updateElement("thumb", videoHtml);
+                updateElement("title", titleHtml);
+                updateElement("description", descriptionHtml);
+                updateElement("duration", durationHtml);
 
-        generateDownloadButtonsClientSide(videoId, inputUrl);
+                generateDownloadButtonsClientSide(videoId, inputUrl);
+            })
+            .catch(error => {
+                displayError(`Failed to load video info: ${error.message}`);
+                updateElement("thumb", '<p>Thumbnail unavailable</p>');
+                updateElement("title", '<h3>Untitled</h3>');
+                updateElement("description", '<h4><details><summary>View Description</summary>Description (Placeholder)</details></h4>');
+                updateElement("duration", '<h5>N/A</h5>');
+                generateDownloadButtonsClientSide(videoId, inputUrl);
+            });
     }
 
     function generateDownloadButtonsClientSide(videoId, inputUrl) {
@@ -136,28 +150,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const qualities = ["mp3", "360p", "720p", "1080p"];
         qualities.forEach(quality => {
             const downloadUrl = `${backendUrl}?url=${encodeURIComponent(inputUrl)}`;
-            fetch(downloadUrl, { method: 'HEAD' }) // Check if the URL is valid
-                .then(response => {
-                    if (response.ok) {
-                        const link = document.createElement('a');
-                        link.href = downloadUrl;
-                        link.download = '';
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                        link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${sanitizeContent(quality)}</button>`;
-                        downloadContainer.appendChild(link);
-                    } else {
-                        displayError(`Download failed for ${quality}: ${response.statusText}`);
-                    }
-                })
-                .catch(error => {
-                    displayError(`Error checking download link: ${error.message}`);
-                });
-        });
-
-        if (downloadContainer.innerHTML.trim() === "") {
-            displayError("No download links available. Please try a different URL.");
-            document.getElementById("container").style.display = "none";
+            const link = document.createElement('a');
+            link.href = '#';
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                fetch(downloadUrl)
+                    .then(response => {
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `video_${quality}.mp4`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch(error => {
+                        displayError(`Download failed for ${quality}: ${error.message}`);
+                    });
+            });
+            link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${sanitizeContent(quality)}</button>`;
+            downloadContainer.appendChild(link);
+            });
         }
     }
 });
