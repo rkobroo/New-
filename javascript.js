@@ -1,17 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    /*******************************
-     * Configuration for Colors
-     *******************************/
-
     const formatColors = {
         greenFormats: ["17", "18", "22"],
         blueFormats: ["139", "140", "141", "249", "250", "251", "599", "600"],
         defaultColor: "#9e0cf2"
     };
-
-    /*******************************
-     * Utility Functions
-     *******************************/
 
     function getBackgroundColor(downloadUrlItag) {
         if (formatColors.greenFormats.includes(downloadUrlItag)) return "green";
@@ -44,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (urlObj.hostname.includes('facebook.com')) {
-                const match = urlObj.pathname.match(/video(s)?\/(\d+)/);
+                const match = urlObj.pathname.match(/video(s)?\/(\d+)/) || urlObj.pathname.match(/share\/r\/([A-Za-z0-9]+)/);
                 return match ? urlObj.href : null;
             }
 
@@ -86,10 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /*******************************
-     * Event Handlers
-     *******************************/
-
     document.getElementById("downloadBtn").addEventListener("click", debounce(function () {
         console.log('Download button clicked');
         document.getElementById("loading").style.display = "initial";
@@ -114,16 +102,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300));
 
-    /*******************************
-     * Response Handlers
-     *******************************/
-
     function handleClientSideDownload(videoId, inputUrl) {
         console.log('Handling download for:', videoId, 'with URL:', inputUrl);
         document.getElementById("container").style.display = "block";
         document.getElementById("loading").style.display = "none";
 
-        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; // Fallback for YouTube
+        const thumbnailUrl = videoId.includes('youtube.com') || videoId.includes('youtu.be') 
+            ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
+            : ''; // Placeholder for other platforms
         const videoHtml = `
             <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
                    poster='${thumbnailUrl}' controls playsinline>
