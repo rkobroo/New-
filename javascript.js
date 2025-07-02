@@ -82,13 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errorContainer) {
             errorContainer.innerHTML = `<span class="text-red-500">${message}</span>`;
             errorContainer.style.display = 'block';
+            setTimeout(() => errorContainer.style.display = 'none', 5000);
         } else {
             alert(message);
         }
     }
 
     function resetState(loading, btn) {
-        if (loading) loading.style.display = 'none';
+        if (loading) {
+            loading.style.display = 'none';
+            loading.innerHTML = '<div class="centerV"><div class="wave"></div></div>';
+        }
         if (btn) btn.disabled = false;
     }
 
@@ -100,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorDiv = document.getElementById('error');
         const infoUrl = `http://localhost:3000/info?url=${encodeURIComponent(inputUrl)}`;
 
-        fetch(infoUrl, { mode: 'cors' }) // Explicitly set CORS mode
+        fetch(infoUrl, { mode: 'cors' })
             .then(response => {
                 console.log('Fetch response status:', response.status, 'URL:', infoUrl);
                 if (!response.ok) throw new Error(`Server error: ${response.status} - ${response.statusText}`);
@@ -112,10 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     info = JSON.parse(text);
                     if (!info.thumbnail && !info.title && !info.duration) {
-                        throw new Error('Incomplete video info received');
+                        throw new Error('Incomplete video info');
                     }
                 } catch (e) {
-                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                    throw new Error('Invalid JSON: ' + text.substring(0, 100));
                 }
                 console.log('Parsed video info:', info);
                 if (container) container.style.display = 'block';
@@ -138,26 +142,20 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Fetch error:', error);
                 if (container) container.style.display = 'block';
-                displayError(`Error: ${error.message}. Please check the URL or server.`);
+                displayError(`Failed to load: ${error.message}. Ensure the server is running at http://localhost:3000.`);
                 updateElement('thumb', '<p class="text-white">Thumbnail unavailable</p>');
                 updateElement('title', '<h3 class="text-white font-bold">Untitled</h3>');
                 updateElement('description', '<h4 class="text-white mt-3"><details><summary class="font-bold">View Description</summary><p class="mt-2">Description (Placeholder)</p></details></h4>');
                 updateElement('duration', '<h5 class="text-white">N/A</h5>');
             })
-            .finally(() => {
-                if (loading) {
-                    loading.style.display = 'none';
-                    loading.innerHTML = '<div class="centerV"><div class="wave"></div></div>'; // Reset to animation only
-                }
-                if (btn) btn.disabled = false;
-            });
+            .finally(() => resetState(loading, btn));
 
         function updateElement(elementId, content) {
             const element = document.getElementById(elementId);
             if (element) {
                 element.innerHTML = content;
                 element.style.opacity = '0';
-                setTimeout(() => element.style.opacity = '1', 10); // Fade-in effect
+                setTimeout(() => element.style.opacity = '1', 10);
             } else {
                 console.warn(`Element with ID "${elementId}" not found.`);
             }
@@ -211,17 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (formatColors.greenFormats.includes(quality)) return 'green';
             if (formatColors.blueFormats.includes(quality)) return '#3800ff';
             return formatColors.defaultColor;
-        }
-
-        function displayError(message, color = 'red-500') {
-            const errorContainer = document.getElementById('error');
-            if (errorContainer) {
-                errorContainer.innerHTML = `<span class="text-${color}">${message}</span>`;
-                errorContainer.style.display = 'block';
-                setTimeout(() => errorContainer.style.display = 'none', 5000); // Auto-hide after 5s
-            } else {
-                alert(message);
-            }
         }
     }
 });
