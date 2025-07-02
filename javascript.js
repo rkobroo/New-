@@ -1,28 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded, attaching event listener');
-
-    const formatColors = {
-        greenFormats: ["17", "18", "22"],
-        blueFormats: ["139", "140", "141", "249", "250", "251", "599", "600"],
-        defaultColor: "#9e0cf2"
-    };
-
+    // Get the download button from the DOM
     const downloadBtn = document.getElementById('downloadBtn');
 
+    // Ensure the button exists before attaching logic
     if (!downloadBtn) {
         console.error('Download button not found!');
         alert('Download button not found. Please check the HTML.');
         return;
     }
 
+    // Attach a debounced click handler to the download button
     downloadBtn.addEventListener('click', debounce(function () {
-        console.log('Download button clicked');
-
         const loading = document.getElementById('loading');
         const btn = document.getElementById('downloadBtn');
         const container = document.getElementById('container');
         const errorDiv = document.getElementById('error');
 
+        // Show loading UI
         if (loading) {
             loading.style.display = 'flex';
             loading.innerHTML = '<div class="centerV"><span class="text-white">Fetching video info...</span><div class="wave"></div></div>';
@@ -31,7 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (container) container.style.display = 'none';
         if (errorDiv) errorDiv.style.display = 'none';
 
-        const inputUrl = document.getElementById('inputUrl')?.value.trim();
+        // Get the URL input value
+        const inputElement = document.getElementById('inputUrl');
+        const inputUrl = inputElement ? inputElement.value.trim() : '';
 
         if (!inputUrl) {
             displayError('Please enter a valid video URL.');
@@ -39,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Extract video ID from the URL
         const videoId = getVideoId(inputUrl);
-        console.log('Extracted videoId:', videoId);
 
         if (videoId) {
             handleClientSideDownload(videoId, inputUrl);
@@ -50,18 +46,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 300));
 
+    // Function to extract video ID or full URL for supported platforms
     function getVideoId(url) {
-        if (!url) return null;
-
         try {
             const urlObj = new URL(url);
             if (urlObj.hostname.includes('youtube.com') || urlObj.hostname === 'youtu.be') {
                 return urlObj.searchParams.get('v') || urlObj.pathname.slice(1);
             }
-            if (urlObj.hostname.includes('facebook.com') ||
+            if (
+                urlObj.hostname.includes('facebook.com') ||
                 urlObj.hostname.includes('instagram.com') ||
-                urlObj.hostname.includes('tiktok.com')) {
-                return urlObj.href;
+                urlObj.hostname.includes('tiktok.com')
+            ) {
+                return url;
             }
             return null;
         } catch (e) {
@@ -70,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Debounce utility to prevent spamming the click handler
     function debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -78,17 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // Display error message in the UI
     function displayError(message) {
         const errorContainer = document.getElementById('error');
         if (errorContainer) {
             errorContainer.innerHTML = `<span class="text-red-500">${message}</span>`;
             errorContainer.style.display = 'block';
-            setTimeout(() => errorContainer.style.display = 'none', 5000);
+            setTimeout(() => {
+                if (errorContainer) errorContainer.style.display = 'none';
+            }, 5000);
         } else {
             alert(message);
         }
     }
 
+    // Reset loading state and enable the button
     function resetState(loading, btn) {
         if (loading) {
             loading.style.display = 'none';
@@ -97,46 +99,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btn) btn.disabled = false;
     }
 
+    // Simulate handling video info retrieval and UI update without real backend
     function handleClientSideDownload(videoId, inputUrl) {
-        console.log('Handling download for:', videoId);
         const loading = document.getElementById('loading');
         const btn = document.getElementById('downloadBtn');
         const container = document.getElementById('container');
 
-        const backendURL = 'https://your-backend.onrender.com'; // Replace with your deployed backend URL
-        const infoUrl = `${backendURL}/info?url=${encodeURIComponent(inputUrl)}`;
+        // Simulate async delay
+        setTimeout(() => {
+            // Mock video information
+            const info = {
+                title: 'Test Video',
+                thumbnail: 'https://via.placeholder.com/480x360?text=Thumbnail',
+                description: 'This is a test video',
+                duration: '3:20',
+                downloadUrls: [
+                    { quality: '360p', url: 'https://example.com/video360.mp4' },
+                    { quality: '720p', url: 'https://example.com/video720.mp4' },
+                    { quality: 'mp3', url: 'https://example.com/audio.mp3' }
+                ]
+            };
 
-        fetch(infoUrl, { mode: 'cors' })
-            .then(res => {
-                if (!res.ok) throw new Error(`Server error: ${res.status} ${res.statusText}`);
-                return res.json();
-            })
-            .then(info => {
-                if (!info.thumbnail || !info.title) throw new Error('Invalid video info');
-                if (container) container.style.display = 'block';
+            // Show video info UI
+            if (container) container.style.display = 'block';
+            updateElement('thumb', `<video poster="${info.thumbnail}" controls><source src="${info.downloadUrls[0].url}" type="video/mp4"></video>`);
+            updateElement('title', `<h3>${info.title}</h3>`);
+            updateElement('description', `<p>${info.description}</p>`);
+            updateElement('duration', `<span>${info.duration}</span>`);
+            generateDownloadButtons(info.downloadUrls);
+            resetState(loading, btn);
+        }, 1500);
 
-                updateElement('thumb', `<video poster="${info.thumbnail}" controls><source src="${inputUrl}" type="video/mp4"></video>`);
-                updateElement('title', `<h3>${info.title}</h3>`);
-                updateElement('description', `<p>${info.description || 'No description.'}</p>`);
-                updateElement('duration', `<span>${info.duration || 'Unknown'}</span>`);
-
-                generateDownloadButtons(info.downloadUrls);
-            })
-            .catch(err => {
-                displayError(err.message);
-                updateElement('thumb', '<p>Thumbnail unavailable</p>');
-                updateElement('title', '<h3>Untitled</h3>');
-                updateElement('description', '<p>Description not available.</p>');
-                updateElement('duration', '<span>N/A</span>');
-            })
-            .finally(() => resetState(loading, btn));
-
+        // Replace content of a specific DOM element
         function updateElement(id, html) {
             const el = document.getElementById(id);
             if (el) el.innerHTML = html;
         }
 
-        function generateDownloadButtons(downloadUrls = []) {
+        // Generate download buttons for each quality option
+        function generateDownloadButtons(downloadUrls) {
             const container = document.getElementById('download');
             if (!container) return;
             container.innerHTML = '';
@@ -146,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.className = 'download-btn';
                 btn.innerText = `Download ${quality}`;
                 btn.download = '';
+                btn.target = '_blank';
                 container.appendChild(btn);
             });
         }
