@@ -42,37 +42,52 @@ function debounce(func, wait) {
 }
 
 /**
- * Extract YouTube video ID from a given URL.
- * @param {string} url - The YouTube URL.
- * @returns {string|null} - The video ID or null if not found.
+ * Extract video ID or URL data from various platforms.
+ * @param {string} url - The video URL.
+ * @returns {string|null} - The video ID or URL, or null if not found.
  */
-function getYouTubeVideoIds(url) {
+function getVideoId(url) {
     if (!url || typeof url !== 'string') {
-        console.error('Invalid URL provided to getYouTubeVideoId:', url);
+        console.error('Invalid URL provided to getVideoId:', url);
         return null;
     }
     try {
         const urlObj = new URL(url);
-        const validHosts = ['www.youtube.com', 'youtube.com', 'youtu.be'];
-        if (!validHosts.includes(urlObj.hostname)) {
-            console.warn('URL does not belong to YouTube:', url);
-            return null;
-        }
-        if (urlObj.hostname === 'youtu.be') {
-            const videoId = urlObj.pathname.slice(1);
-            return videoId.length === 11 ? videoId : null;
-        }
-        if (urlObj.hostname.includes('youtube.com')) {
+
+        // YouTube
+        if (urlObj.hostname.includes('youtube.com') || urlObj.hostname === 'youtu.be') {
+            if (urlObj.hostname === 'youtu.be') {
+                return urlObj.pathname.slice(1);
+            }
             if (urlObj.pathname.startsWith('/shorts/')) {
                 return urlObj.pathname.split('/')[2];
             }
             const videoId = urlObj.searchParams.get('v');
             return videoId && videoId.length === 11 ? videoId : null;
         }
-        console.warn('Unrecognized YouTube URL format:', url);
+
+        // Facebook
+        if (urlObj.hostname.includes('facebook.com')) {
+            const match = urlObj.pathname.match(/video(s)?\/(\d+)/);
+            return match ? urlObj.href : null;
+        }
+
+        // Instagram
+        if (urlObj.hostname.includes('instagram.com')) {
+            const match = urlObj.pathname.match(/reel\/([A-Za-z0-9_-]+)/) || urlObj.pathname.match(/p\/([A-Za-z0-9_-]+)\/$/);
+            return match ? urlObj.href : null;
+        }
+
+        // TikTok
+        if (urlObj.hostname.includes('tiktok.com')) {
+            const match = urlObj.pathname.match(/video\/(\d+)/);
+            return match ? urlObj.href : null;
+        }
+
+        console.warn('Unsupported URL format:', url);
         return null;
     } catch (error) {
-        console.error('Error parsing URL in getYouTubeVideoId:', error);
+        console.error('Error parsing URL in getVideoId:', error);
         return null;
     }
 }
@@ -101,49 +116,7 @@ function updateElement(elementId, content) {
 }
 
 /**
- * Retrieve a query parameter value by name from a URL.
- * @param {string} name - The name of the parameter.
- * @param {string} url - The URL to extract the parameter from.
- * @returns {string} - The parameter value or an empty string if not found.
- */
-function getParameterByName(name, url) {
-    name = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
-    const results = regex.exec(url);
-    if (!results) return '';
-    if (!results[2]) return '';
-    return decodeURIComponent(results[2].replace(/\+/g, ' '));
-}
-
-/*******************************
- * Event Handlers
- *******************************/
-
-document.getElementById("downloadBtn").addEventListener("click", debounce(function () {
-    document.getElementById("loading").style.display = "initial";
-    document.getElementById("downloadBtn").disabled = true;
-
-    const inputUrl = document.getElementById("inputUrl").value.trim();
-    if (!inputUrl) {
-        displayError("Please enter a valid YouTube URL.");
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("downloadBtn").disabled = false;
-        return;
-    }
-
-    // Attempt to extract video ID and construct a direct download link
-    const videoId = getYouTubeVideoIds(inputUrl);
-    if (videoId) {
-        handleClientSideDownload(videoId, inputUrl);
-    } else {
-        displayError("Invalid YouTube URL or unsupported format.");
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("downloadBtn").disabled = false;
-    }
-}, 300));
-
-/**
- * Display an error message within the page instead of using alert.
+ * Display an error message within the page.
  * @param {string} message - The error message to display.
  */
 function displayError(message) {
@@ -157,24 +130,50 @@ function displayError(message) {
 }
 
 /*******************************
+ * Event Handlers
+ *******************************/
+
+document.getElementById("downloadBtn").addEventListener("click", debounce(function () {
+    document.getElementById("loading").style.display = "initial";
+    document.getElementById("downloadBtn").disabled = true;
+
+    const inputUrl = document.getElementById("inputUrl").value.trim();
+    if (!inputUrl) {
+        displayError("Please enter a valid video URL.");
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("downloadBtn").disabled = false;
+        return;
+    }
+
+    const videoId = getVideoId(inputUrl);
+    if (videoId) {
+        handleClientSideDownload(videoId, inputUrl);
+    } else {
+        displayError("Invalid URL or unsupported platform.");
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("downloadBtn").disabled = false;
+    }
+}, 300));
+
+/*******************************
  * Response Handlers
  *******************************/
 
 /**
  * Handle client-side download logic.
- * @param {string} videoId - The YouTube video ID.
+ * @param {string} videoId - The video ID or URL.
  * @param {string} inputUrl - The original input URL.
  */
 function handleClientSideDownload(videoId, inputUrl) {
     document.getElementById("container").style.display = "block";
     document.getElementById("loading").style.display = "none";
 
-    // Simulate video data (you'd need to scrape this or use a predefined structure)
-    const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    // Simulate video data (placeholder until backend provides metadata)
+    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; // Fallback for YouTube
     const videoHtml = `
         <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
                poster='${thumbnailUrl}' controls playsinline>
-            <source src='https://www.youtube.com/embed/${videoId}?autoplay=1' type='video/mp4'>
+            <source src='${inputUrl}' type='video/mp4'>
         </video>`;
     const titleHtml = `<h3>Video Title (Placeholder)</h3>`;
     const descriptionHtml = `<h4><details><summary>View Description</summary>Description (Placeholder)</details></h4>`;
@@ -185,24 +184,29 @@ function handleClientSideDownload(videoId, inputUrl) {
     updateElement("description", descriptionHtml);
     updateElement("duration", durationHtml);
 
-    generateDownloadButtonsClientSide(videoId);
+    generateDownloadButtonsClientSide(videoId, inputUrl);
 }
 
 /**
  * Generate download buttons client-side.
- * @param {string} videoId - The YouTube video ID.
+ * @param {string} videoId - The video ID or URL.
+ * @param {string} inputUrl - The original input URL.
  */
-function generateDownloadButtonsClientSide(videoId) {
+function generateDownloadButtonsClientSide(videoId, inputUrl) {
     const downloadContainer = document.getElementById("download");
     downloadContainer.innerHTML = "";
 
-    // Simulate download options (replace with actual scraped URLs if possible)
-    const qualities = ["mp3", "360", "720", "1080"];
+    // Base URL for the backend proxy (update to your deployed server URL)
+    const backendUrl = 'http://localhost:3000/download'; // Change to your server URL (e.g., https://yourserver.com/download)
+
+    // Define available qualities (simplified for now)
+    const qualities = ["mp3", "360p", "720p", "1080p"];
     qualities.forEach(quality => {
+        const downloadUrl = `${backendUrl}?url=${encodeURIComponent(inputUrl)}`;
         downloadContainer.innerHTML += `
-            <a href='https://www.youtube.com/watch?v=${videoId}' download target='_blank' rel='noopener noreferrer'>
+            <a href='${downloadUrl}' download target='_blank' rel='noopener noreferrer'>
                 <button class='dlbtns' style='background:${getBackgroundColor(quality)}'>
-                    ${sanitizeContent(quality)}p
+                    ${sanitizeContent(quality)}
                 </button>
             </a>`;
     });
