@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const thumbnailUrl = videoId.includes('youtube.com') || videoId.includes('youtu.be') 
             ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` 
-            : ''; // Placeholder for other platforms
+            : '';
         const videoHtml = `
             <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
                    poster='${thumbnailUrl}' controls playsinline>
@@ -136,12 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const qualities = ["mp3", "360p", "720p", "1080p"];
         qualities.forEach(quality => {
             const downloadUrl = `${backendUrl}?url=${encodeURIComponent(inputUrl)}`;
-            downloadContainer.innerHTML += `
-                <a href='${downloadUrl}' download target='_blank' rel='noopener noreferrer'>
-                    <button class='dlbtns' style='background:${getBackgroundColor(quality)}'>
-                        ${sanitizeContent(quality)}
-                    </button>
-                </a>`;
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = '';
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${sanitizeContent(quality)}</button>`;
+            downloadContainer.appendChild(link);
         });
 
         if (downloadContainer.innerHTML.trim() === "") {
