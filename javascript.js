@@ -106,7 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fetch(infoUrl, { mode: 'cors' })
             .then(response => {
-                console.log('Fetch response status:', response.status, 'URL:', infoUrl);
+                console.log('Fetch response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok,
+                    url: infoUrl
+                });
                 if (!response.ok) throw new Error(`Server error: ${response.status} - ${response.statusText}`);
                 return response.text();
             })
@@ -140,9 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 generateDownloadButtonsClientSide(videoId, inputUrl);
             })
             .catch(error => {
-                console.error('Fetch error:', error);
+                console.error('Fetch error details:', error);
                 if (container) container.style.display = 'block';
-                displayError(`Failed to load: ${error.message}. Ensure the server is running at http://localhost:3000.`);
+                displayError(`Failed to load: ${error.message}. Ensure server is running at http://localhost:3000. Raw response hint: ${error.message.includes('JSON') ? 'Check server output' : 'Network issue'}`);
                 updateElement('thumb', '<p class="text-white">Thumbnail unavailable</p>');
                 updateElement('title', '<h3 class="text-white font-bold">Untitled</h3>');
                 updateElement('description', '<h4 class="text-white mt-3"><details><summary class="font-bold">View Description</summary><p class="mt-2">Description (Placeholder)</p></details></h4>');
@@ -158,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => element.style.opacity = '1', 10);
             } else {
                 console.warn(`Element with ID "${elementId}" not found.`);
+                displayError(`UI element "${elementId}" missing. Check HTML.`);
             }
         }
 
@@ -188,27 +194,4 @@ document.addEventListener('DOMContentLoaded', () => {
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
-                            a.download = `video_${quality}.mp4`;
-                            a.style.display = 'none';
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                            window.URL.revokeObjectURL(url);
-                            displayError(`Downloaded ${quality} successfully!`, 'green');
-                        })
-                        .catch(error => {
-                            displayError(`Download failed for ${quality}: ${error.message}`);
-                        });
-                });
-                link.innerHTML = `<button class='dlbtns px-4 py-2 rounded-md text-white font-semibold mx-1 my-2' style='background:${getBackgroundColor(quality)}'>${quality}</button>`;
-                downloadContainer.appendChild(link);
-            });
-        }
-
-        function getBackgroundColor(quality) {
-            if (formatColors.greenFormats.includes(quality)) return 'green';
-            if (formatColors.blueFormats.includes(quality)) return '#3800ff';
-            return formatColors.defaultColor;
-        }
-    }
-});
+                            a.download =
