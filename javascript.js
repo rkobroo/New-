@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('downloadBtn');
     if (!downloadBtn) {
         console.error('Download button not found!');
+        alert('Download button not found. Please check the HTML.');
         return;
     }
 
@@ -17,15 +18,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const loading = document.getElementById('loading');
         const btn = document.getElementById('downloadBtn');
         const container = document.getElementById('container');
-        if (loading) loading.style.display = 'initial';
+        const errorDiv = document.getElementById('error');
+
+        if (loading) {
+            loading.style.display = 'flex';
+            loading.innerHTML = '<div class="centerV"><span class="text-white">Fetching video info...</span><div class="wave"></div></div>';
+        }
         if (btn) btn.disabled = true;
-        if (container) container.style.display = 'none'; // Reset container
+        if (container) container.style.display = 'none';
+        if (errorDiv) errorDiv.style.display = 'none';
 
         const inputUrl = document.getElementById('inputUrl')?.value.trim();
         if (!inputUrl) {
             displayError('Please enter a valid video URL.');
-            if (loading) loading.style.display = 'none';
-            if (btn) btn.disabled = false;
+            resetState(loading, btn);
             return;
         }
 
@@ -35,8 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             handleClientSideDownload(videoId, inputUrl);
         } else {
             displayError('Invalid URL or unsupported platform.');
-            if (loading) loading.style.display = 'none';
-            if (btn) btn.disabled = false;
+            resetState(loading, btn);
         }
     }, 300));
 
@@ -50,6 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (urlObj.hostname.includes('facebook.com')) {
                 return urlObj.href;
+            }
+            if (urlObj.hostname.includes('instagram.com')) {
+                return urlObj.pathname.match(/reel\/([A-Za-z0-9_-]+)|p\/([A-Za-z0-9_-]+)\//)?.[0] || urlObj.href;
+            }
+            if (urlObj.hostname.includes('tiktok.com')) {
+                return urlObj.pathname.match(/video\/(\d+)/)?.[0] || urlObj.href;
             }
             return null;
         } catch (e) {
@@ -69,11 +80,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayError(message) {
         const errorContainer = document.getElementById('error');
         if (errorContainer) {
-            errorContainer.innerHTML = message;
+            errorContainer.innerHTML = `<span class="text-red-500">${message}</span>`;
             errorContainer.style.display = 'block';
         } else {
             alert(message);
         }
+    }
+
+    function resetState(loading, btn) {
+        if (loading) loading.style.display = 'none';
+        if (btn) btn.disabled = false;
     }
 
     function handleClientSideDownload(videoId, inputUrl) {
@@ -81,26 +97,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const loading = document.getElementById('loading');
         const btn = document.getElementById('downloadBtn');
         const container = document.getElementById('container');
+        const errorDiv = document.getElementById('error');
         const infoUrl = `http://localhost:3000/info?url=${encodeURIComponent(inputUrl)}`;
 
-        fetch(infoUrl)
+        fetch(infoUrl, { mode: 'cors' }) // Explicitly set CORS mode
             .then(response => {
                 console.log('Fetch response status:', response.status, 'URL:', infoUrl);
-                if (!response.ok) throw new Error(`Info fetch failed: ${response.statusText}`);
-                return response.json();
+                if (!response.ok) throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+                return response.text();
             })
-            .then(info => {
-                console.log('Video info received:', info);
+            .then(text => {
+                console.log('Raw response:', text);
+                let info;
+                try {
+                    info = JSON.parse(text);
+                    if (!info.thumbnail && !info.title && !info.duration) {
+                        throw new Error('Incomplete video info received');
+                    }
+                } catch (e) {
+                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                }
+                console.log('Parsed video info:', info);
                 if (container) container.style.display = 'block';
-                const thumbnailUrl = info.thumbnail || '';
+                const thumbnailUrl = info.thumbnail || 'https://via.placeholder.com/480x360?text=No+Thumbnail';
                 const videoHtml = `
-                    <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;'
-                           poster='${thumbnailUrl}' controls playsinline>
-                        <source src='${inputUrl}' type='video/mp4'>
+                    <video style="background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;"
+                           poster="${thumbnailUrl}" controls playsinline>
+                        <source src="${inputUrl}" type="video/mp4">
                     </video>`;
-                const titleHtml = `<h3>${info.title || 'Untitled'}</h3>`;
-                const descriptionHtml = `<h4><details><summary>View Description</summary>Description (Placeholder)</details></h4>`;
-                const durationHtml = `<h5>${info.duration || 'N/A'}</h5>`;
+                const titleHtml = `<h3 class="text-white font-bold">${info.title || 'Untitled'}</h3>`;
+                const descriptionHtml = `<h4 class="text-white mt-3"><details><summary class="font-bold">View Description</summary><p class="mt-2">Description (Placeholder)</p></details></h4>`;
+                const durationHtml = `<h5 class="text-white">${info.duration || 'N/A'}</h5>`;
 
                 updateElement('thumb', videoHtml);
                 updateElement('title', titleHtml);
@@ -111,21 +138,29 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Fetch error:', error);
                 if (container) container.style.display = 'block';
-                displayError(`Failed to load video info: ${error.message}`);
-                updateElement('thumb', '<p>Thumbnail unavailable</p>');
-                updateElement('title', '<h3>Untitled</h3>');
-                updateElement('description', '<h4><details><summary>View Description</summary>Description (Placeholder)</details></h4>');
-                updateElement('duration', '<h5>N/A</h5>');
+                displayError(`Error: ${error.message}. Please check the URL or server.`);
+                updateElement('thumb', '<p class="text-white">Thumbnail unavailable</p>');
+                updateElement('title', '<h3 class="text-white font-bold">Untitled</h3>');
+                updateElement('description', '<h4 class="text-white mt-3"><details><summary class="font-bold">View Description</summary><p class="mt-2">Description (Placeholder)</p></details></h4>');
+                updateElement('duration', '<h5 class="text-white">N/A</h5>');
             })
             .finally(() => {
-                if (loading) loading.style.display = 'none';
+                if (loading) {
+                    loading.style.display = 'none';
+                    loading.innerHTML = '<div class="centerV"><div class="wave"></div></div>'; // Reset to animation only
+                }
                 if (btn) btn.disabled = false;
             });
 
         function updateElement(elementId, content) {
             const element = document.getElementById(elementId);
-            if (element) element.innerHTML = content;
-            else console.warn(`Element with ID "${elementId}" not found.`);
+            if (element) {
+                element.innerHTML = content;
+                element.style.opacity = '0';
+                setTimeout(() => element.style.opacity = '1', 10); // Fade-in effect
+            } else {
+                console.warn(`Element with ID "${elementId}" not found.`);
+            }
         }
 
         function generateDownloadButtonsClientSide(videoId, inputUrl) {
@@ -133,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const downloadContainer = document.getElementById('download');
             if (!downloadContainer) {
                 console.error('Download container not found!');
+                displayError('Download options failed to load.');
                 return;
             }
             downloadContainer.innerHTML = '';
@@ -147,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     e.preventDefault();
                     fetch(downloadUrl)
                         .then(response => {
-                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            if (!response.ok) throw new Error(`Download error: ${response.statusText}`);
                             return response.blob();
                         })
                         .then(blob => {
@@ -155,16 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
                             const a = document.createElement('a');
                             a.href = url;
                             a.download = `video_${quality}.mp4`;
+                            a.style.display = 'none';
                             document.body.appendChild(a);
                             a.click();
                             a.remove();
                             window.URL.revokeObjectURL(url);
+                            displayError(`Downloaded ${quality} successfully!`, 'green');
                         })
                         .catch(error => {
                             displayError(`Download failed for ${quality}: ${error.message}`);
                         });
                 });
-                link.innerHTML = `<button class='dlbtns' style='background:${getBackgroundColor(quality)}'>${quality}</button>`;
+                link.innerHTML = `<button class='dlbtns px-4 py-2 rounded-md text-white font-semibold mx-1 my-2' style='background:${getBackgroundColor(quality)}'>${quality}</button>`;
                 downloadContainer.appendChild(link);
             });
         }
@@ -173,6 +211,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (formatColors.greenFormats.includes(quality)) return 'green';
             if (formatColors.blueFormats.includes(quality)) return '#3800ff';
             return formatColors.defaultColor;
+        }
+
+        function displayError(message, color = 'red-500') {
+            const errorContainer = document.getElementById('error');
+            if (errorContainer) {
+                errorContainer.innerHTML = `<span class="text-${color}">${message}</span>`;
+                errorContainer.style.display = 'block';
+                setTimeout(() => errorContainer.style.display = 'none', 5000); // Auto-hide after 5s
+            } else {
+                alert(message);
+            }
         }
     }
 });
