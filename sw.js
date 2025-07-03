@@ -1,5 +1,5 @@
 // Cache name (versioned for updates)
-const CACHE_NAME = 'vkrdownloader-cache-v4';
+const CACHE_NAME = 'vkrdownloader-cache-v7';
 
 // Assets to cache (update with your actual file paths)
 const urlsToCache = [
@@ -7,10 +7,14 @@ const urlsToCache = [
   '/index.html', // Main HTML
   '/manifest.webmanifest', // Web manifest
   '/logo.png', // Logo
-  '/css/styles.css', // CSS for animations
-  '/js/script.js', // JS for results
-  '/images/loader.png', // Optional image for UI
-  // Add other assets (e.g., '/files/file1.zip') if needed
+  '/css/styles.css', // CSS for animations and styling
+  '/js/script.js', // JS for results and URL processing
+  '/images/loader.png', // Loading animation image
+  '/images/test-video-thumbnail.jpg', // Thumbnail
+  '/files/test-video-360p.mp4', // Downloadable files
+  '/files/test-video-720p.mp4',
+  '/files/test-video.mp3',
+  // Add other assets as needed
 ];
 
 // Install event: Cache assets
@@ -51,6 +55,7 @@ self.addEventListener('fetch', (event) => {
         console.log('Serving from cache:', event.request.url);
         return cachedResponse;
       }
+      // Allow network fetch but fall back to cache for specific file types
       return fetch(event.request).then((networkResponse) => {
         if (networkResponse && networkResponse.ok) {
           return caches.open(CACHE_NAME).then((cache) => {
@@ -58,13 +63,16 @@ self.addEventListener('fetch', (event) => {
             return networkResponse;
           });
         }
-        return networkResponse;
+        return caches.match(event.request) || new Response('Offline: Resource unavailable', {
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
       }).catch(() => {
         console.error('Fetch failed:', event.request.url);
         if (event.request.mode === 'navigate') {
           return caches.match('/index.html'); // Fallback for page loads
         }
-        return new Response('Offline: Resource unavailable', {
+        return caches.match(event.request) || new Response('Offline: Resource unavailable', {
           status: 503,
           statusText: 'Service Unavailable',
         });
