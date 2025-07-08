@@ -63,7 +63,7 @@ function generateMediaDisplay(info) {
         container.appendChild(iframe);
     } else {
         const message = document.createElement('p');
-        message.innerText = 'Playback not available. Direct downloads require an external API, which is not supported here.';
+        message.innerText = 'Playback not available for this platform. Downloads are not supported without an external API.';
         message.className = 'text-gray-500';
         container.appendChild(message);
     }
@@ -111,8 +111,8 @@ function handleClientSideDisplay(videoId, inputUrl) {
 
     // Fallback for non-YouTube (e.g., TikTok)
     info.thumbnail = 'https://via.placeholder.com/480x360?text=Thumbnail+Unavailable';
-    info.title = 'Unknown Video';
-    info.description = 'Playback not supported for this platform without an API.';
+    info.title = 'Unsupported Video';
+    info.description = 'This platform (e.g., TikTok) is not supported for playback or download without an API.';
     info.embedUrl = '';
     showMediaInfo(info, container, loading, btn);
 
