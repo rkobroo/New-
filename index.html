@@ -3,20 +3,20 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="title" content="RKO BRODownloader - Powerful Video Downloader and Online Tools">
-    <meta name="description" content="Download videos easily from various platforms with RKO Downloader. Your all-in-one video downloading and online tools solution.">
+    <meta name="title" content="RKO Downloader - View and Play Videos Online">
+    <meta name="description" content="View and play videos easily from YouTube with RKO Downloader. A simple online tool for video previews.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="keywords" content="RKO Downloader, video downloader, download videos, online tools">
+    <meta name="keywords" content="RKO Downloader, video viewer, play videos, online tools">
     <meta name="robots" content="index,follow">
     <meta name="author" content="RKO BRO">
-    <meta property="og:title" content="RKO Downloader - Download Videos Easily and Quickly">
-    <meta property="og:description" content="RKO Downloader makes downloading videos easy and quick. Get started now with this powerful tool.">
+    <meta property="og:title" content="RKO Downloader - View Videos Easily">
+    <meta property="og:description" content="RKO Downloader allows you to view and play videos from YouTube. Try it now!">
     <meta property="og:image" content="/VKrDownloader/logo.png">
     <meta property="og:url" content="/">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="RKO Downloader - Easy Video Downloads">
-    <meta name="twitter:description" content="Use RKO Downloader for quick and easy video downloads from various platforms.">
+    <meta name="twitter:title" content="RKO Downloader - Easy Video Viewing">
+    <meta name="twitter:description" content="View and play videos from YouTube with RKO Downloader.">
     <meta name="twitter:image" content="/VKrDownloader/logo.png">    
     <link rel="icon" href="/VKrDownloader/logo.png" sizes="32x32" type="image/png">
     <link rel="shortcut icon" href="/VKrDownloader/logo.png" type="image/x-icon">  
@@ -25,7 +25,7 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <title>RKO Downloader: Download Videos / Audio Online From Any Site</title>
+    <title>RKO Downloader: View and Play Videos Online</title>
 </head>
 
 <script>
@@ -65,13 +65,13 @@
 <body>
     <header class="bg-dark text-white">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="#"><img src="https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png" style="width:40px; height:40px;border-radius:10px;box-shadow:3px 3px 10px yellow;"></a>
+            <a class="navbar-brand" href="#"><img src="logo.png" style="width:40px; height:40px;border-radius:10px;box-shadow:3px 3px 10px yellow;"></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active"><a class="nav-link" href="/VKrDownloader">Home</a></li>
+                    <li class="nav-item active"><a class="nav-link" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="mailto:rkobro112@gmail.com">Service</a></li>
                     <li class="nav-item"><a class="nav-link" href="https://www.instagram.com/himalpaudel112/profilecard/?igsh=ZHl5MGlra2c5eDdw">Follow</a></li>
                     <li class="nav-item"><a class="nav-link" href="https://www.facebook.com/profile.php?id=100084573213860">Facebook</a></li>
@@ -84,9 +84,9 @@
         <div class="row">
             <div class="col-md-10 mx-auto">
                 <div class="form-group">
-                    <input id="inputUrl" type="url" class="form-control" placeholder="Enter URL (YouTube, Facebook, Instagram, TikTok)">
+                    <input id="inputUrl" type="url" class="form-control" placeholder="Enter URL (e.g., YouTube)">
                 </div>
-                <button id="downloadBtn" type="submit" class="btn btn-primary">Download</button>
+                <button id="downloadBtn" type="submit" class="btn btn-primary">View</button>
             </div>
         </div>
         <div class="text-center mt-3">
@@ -109,8 +109,8 @@
         </div>
 
         <div id="container" class="text-center mt-3" style="display: none;">
-            <div id="thumb" class="mb-3"></div>
-            <div id="title"></div>
+            <div id="thumb" class="mb-3"><img src="" alt="Thumbnail" style="max-width:100%;"></div>
+            <div id="title" class="h3"></div>
             <div id="description" class="mt-3"></div>
             <div id="duration"></div>
             <div id="download"></div>
@@ -118,21 +118,21 @@
         </div>
 
         <div id="content" class="text-center mt-5 p-4" style="background-color: #150707c7; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <h2 style="font-weight: 700; color: #fff;">RKO Downloader - Download Videos Seamlessly</h2>
+            <h2 style="font-weight: 700; color: #fff;">RKO Downloader - View Videos Seamlessly</h2>
             <p style="font-size: 1.1rem; color: #fff; margin-top: 10px;">
-                RKO Downloader by RKO BRO is your ultimate tool for downloading online videos, thumbnails, and music from YouTube, Facebook, Instagram, and TikTok. It's fast, free, and hassle-free!
+                RKO Downloader by RKO BRO is your tool for viewing and playing videos from YouTube. Enjoy thumbnails and playback with this simple online tool!
             </p>
             <hr style="margin: 20px 0; border-top: 1px solid #ddd;">
-            <h4 style="font-weight: 600; color: #c2c0c0;">Download from Your Favorite Platforms:</h4>
+            <h4 style="font-weight: 600; color: #c2c0c0;">Supported Platforms:</h4>
             <ul style="list-style: none; padding: 0; font-size: 1rem; color: #e6e0e0; line-height: 1.8;">
-                <li>🎥 YouTube</li>
-                <li>📘 Facebook</li>
-                <li>📸 Instagram</li>
-                <li>🎵 TikTok</li>
-                <li>🌐 More coming soon!</li>
+                <li>🎥 YouTube (Playback Supported)</li>
+                <li>📘 Facebook (Preview Only)</li>
+                <li>📸 Instagram (Preview Only)</li>
+                <li>🎵 TikTok (Preview Only)</li>
+                <li>🌐 More features coming soon!</li>
             </ul>
             <p style="font-size: 1rem; color: #eae4e4; margin-top: 15px;">
-                Supports all audio and video qualities for the best experience.
+                Note: Video downloads are not supported without an external API.
             </p>
         </div>
     </div>
@@ -142,14 +142,12 @@
     </footer>
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js').then(() => {
+            navigator.serviceWorker.register('sw.js').then(() => {
                 console.log('Service Worker Registered');
             });
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript" src="javascript.js"></script>
     <script>
         let deferredPrompt;
