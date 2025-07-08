@@ -46,20 +46,27 @@ function resetState(loading, btn) {
     if (btn) btn.disabled = false;
 }
 
-// Generate download buttons for each quality option
-function generateDownloadButtons(downloadUrls) {
+// Generate playback or informational content
+function generateMediaDisplay(info) {
     const container = document.getElementById('download');
     if (!container) return;
     container.innerHTML = '';
-    downloadUrls.forEach(({ quality, url }) => {
-        const btn = document.createElement('a');
-        btn.href = url;
-        btn.className = 'download-btn';
-        btn.innerText = `Download ${quality}`;
-        btn.download = '';
-        btn.target = '_blank';
-        container.appendChild(btn);
-    });
+
+    if (info.embedUrl) {
+        const iframe = document.createElement('iframe');
+        iframe.src = info.embedUrl;
+        iframe.style.width = '100%';
+        iframe.style.maxWidth = '480px';
+        iframe.style.height = '360px';
+        iframe.frameBorder = '0';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        container.appendChild(iframe);
+    } else {
+        const message = document.createElement('p');
+        message.innerText = 'Playback not available. Direct downloads require an external API, which is not supported here.';
+        message.className = 'text-gray-500';
+        container.appendChild(message);
+    }
 }
 
 // Replace content of a specific DOM element
@@ -68,8 +75,8 @@ function updateElement(id, html) {
     if (el) el.innerHTML = html;
 }
 
-// Main function to handle video downloading logic
-function handleClientSideDownload(videoId, inputUrl) {
+// Main function to handle video display logic
+function handleClientSideDisplay(videoId, inputUrl) {
     const loading = document.getElementById('loading');
     const btn = document.getElementById('downloadBtn');
     const container = document.getElementById('container');
@@ -78,45 +85,44 @@ function handleClientSideDownload(videoId, inputUrl) {
         thumbnail: '',
         description: '',
         duration: '',
-        downloadUrls: []
+        embedUrl: ''
     };
 
-    // Detect YouTube and get thumbnail/title
+    // Detect YouTube and get details
     const ytId = getYouTubeId(inputUrl);
     if (ytId) {
         info.thumbnail = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-        info.downloadUrls = [
-            { quality: 'Watch on YouTube', url: `https://www.youtube.com/watch?v=${ytId}` }
-        ];
+        info.embedUrl = `https://www.youtube.com/embed/${ytId}`;
+        info.title = 'YouTube Video'; // Fallback title
 
+        // Attempt to fetch title (limited without API)
         fetch(`https://corsproxy.io/?https://www.youtube.com/watch?v=${ytId}`)
             .then(resp => resp.text())
             .then(html => {
                 const titleMatch = html.match(/<title>(.*?)<\/title>/);
                 info.title = titleMatch ? titleMatch[1].replace(' - YouTube', '') : 'YouTube Video';
-                showVideoInfo(info, container, loading, btn);
+                showMediaInfo(info, container, loading, btn);
             })
             .catch(() => {
-                info.title = 'YouTube Video';
-                showVideoInfo(info, container, loading, btn);
+                showMediaInfo(info, container, loading, btn);
             });
         return;
     }
 
-    // Fallback for non-YouTube: show placeholder and ask user to paste details
-    info.thumbnail = 'https://via.placeholder.com/480x360?text=No+Thumbnail';
+    // Fallback for non-YouTube (e.g., TikTok)
+    info.thumbnail = 'https://via.placeholder.com/480x360?text=Thumbnail+Unavailable';
     info.title = 'Unknown Video';
-    info.description = 'Cannot fetch details without external API for this platform.';
-    info.downloadUrls = [];
-    showVideoInfo(info, container, loading, btn);
+    info.description = 'Playback not supported for this platform without an API.';
+    info.embedUrl = '';
+    showMediaInfo(info, container, loading, btn);
 
-    function showVideoInfo(info, container, loading, btn) {
+    function showMediaInfo(info, container, loading, btn) {
         if (container) container.style.display = 'block';
         updateElement('thumb', `<img src="${info.thumbnail}" alt="Thumbnail" style="max-width:100%;">`);
         updateElement('title', `<h3>${info.title}</h3>`);
         updateElement('description', `<p>${info.description}</p>`);
-        updateElement('duration', `<span>${info.duration}</span>`);
-        generateDownloadButtons(info.downloadUrls);
+        updateElement('duration', `<span>${info.duration || 'N/A'}</span>`);
+        generateMediaDisplay(info);
         resetState(loading, btn);
     }
 }
@@ -143,10 +149,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Extract video ID from the URL
-            const videoId = getYouTubeId(inputUrl) || inputUrl; // fallback for non-YouTube
+            const videoId = getYouTubeId(inputUrl) || inputUrl; // Fallback for non-YouTube
             if (videoId) {
-                handleClientSideDownload(videoId, inputUrl);
+                handleClientSideDisplay(videoId, inputUrl);
             } else {
                 displayError('Invalid URL or unsupported platform.');
                 resetState(loading, btn);
