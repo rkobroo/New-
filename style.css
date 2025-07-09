@@ -18,8 +18,8 @@ nav ul {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    width: 100%;
+    display:flex;
+    width:100%;
     flex-direction: row-reverse !important;
 }
 
@@ -42,11 +42,10 @@ nav a {
 
 #inputUrl {
     padding: 10px;
-    min-width: 100%;
+   min-width:100%; /* Full width input */
     border: none;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-bottom: 10px;
 }
 
 #downloadBtn {
@@ -55,7 +54,7 @@ nav a {
     background-color: #007bff;
     color: #fff;
     border: none;
-    width: 100%;
+    width:100%;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s;
@@ -64,84 +63,23 @@ nav a {
 #downloadBtn:hover {
     background-color: #0056b3;
 }
-
-#download {
-    display: flex;
+#download{
+    display:flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    flex-wrap: wrap;
+    width:100%;
+    flex-wrap:wrap;
 }
-
 #loading {
     text-align: center;
     display: none;
     margin-top: 20px;
 }
 
-#loading .centerV {
-    height: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: transparent;
-}
-
-#loading .wave {
-    width: 5px;
-    height: 100px;
-    background: linear-gradient(45deg, red, #fff);
-    margin: 10px;
-    animation: wave 1s linear infinite;
-    border-radius: 20px;
-}
-
-#loading .wave:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-#loading .wave:nth-child(3) {
-    animation-delay: 0.2s;
-}
-
-#loading .wave:nth-child(4) {
-    animation-delay: 0.3s;
-}
-
-#loading .wave:nth-child(5) {
-    animation-delay: 0.4s;
-}
-
-#loading .wave:nth-child(6) {
-    animation-delay: 0.5s;
-}
-
-#loading .wave:nth-child(7) {
-    animation-delay: 0.6s;
-}
-
-#loading .wave:nth-child(8) {
-    animation-delay: 0.7s;
-}
-
-#loading .wave:nth-child(9) {
-    animation-delay: 0.8s;
-}
-
-#loading .wave:nth-child(10) {
-    animation-delay: 0.9s;
-}
-
-@keyframes wave {
-    0% {
-        transform: scale(0);
-    }
-    50% {
-        transform: scale(1);
-    }
-    100% {
-        transform: scale(0);
-    }
+#loading p {
+    font-weight: bold;
+    font-size: 38px;
+    color: #333;
 }
 
 #container {
@@ -154,33 +92,11 @@ nav a {
     border-radius: 10px;
 }
 
-#thumb video {
+#thumb img{
     width: 100%;
-    height: 500px;
-    border-radius: 20px;
-    background: black center center/cover no-repeat;
+    height: 300px;
 }
-
-#title,
-#description,
-#duration {
-    margin: 10px 0;
-}
-
-#description details {
-    text-align: left;
-    margin: 0 auto;
-    max-width: 80%;
-}
-
-#error {
-    display: none;
-    color: red;
-    margin: 10px 0;
-    text-align: center;
-}
-
-.dlbtns {
+.dlbtns{
     display: inline-block;
     padding: 10px 20px;
     margin: 5px;
@@ -190,24 +106,75 @@ nav a {
     font-weight: bold;
     color: white;
     cursor: pointer;
-    min-width: 150px;
+    min-width: 150px;  /* Fixed width */
     transition: background-color 0.3s;
-    text-decoration: none;
 }
-
-.dlbtns:hover {
-    opacity: 0.9;
+.centerV {
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
 }
-
-#content {
+#content{
     background: #000000a8;
     color: white;
-    font-weight: bold;
-    margin-bottom: 80px;
-    padding: 20px;
-    border-radius: 10px;
+    font-weight:bold;
+    margin-bottom:80px;
+}
+.wave {
+  width: 5px;
+  height: 100px;
+  background: linear-gradient(45deg, red, #fff);
+  margin: 10px;
+  animation: wave 1s linear infinite;
+  border-radius: 20px;
+}
+.wave:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.wave:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.wave:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.wave:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.wave:nth-child(6) {
+  animation-delay: 0.5s;
+}
+.wave:nth-child(7) {
+  animation-delay: 0.6s;
+}
+.wave:nth-child(8) {
+  animation-delay: 0.7s;
+}
+.wave:nth-child(9) {
+  animation-delay: 0.8s;
+}
+.wave:nth-child(10) {
+  animation-delay: 0.9s;
 }
 
+@keyframes wave {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+
+
+/* Add more styling as needed */
+
+/* Responsive styles for smaller screens */
 @media only screen and (max-width: 990px) {
     #inputUrl {
         width: 100%;
@@ -217,23 +184,16 @@ nav a {
         display: block;
         text-align: center;
     }
-
-    nav ul {
-        flex-direction: column !important;
-    }
-
+   nav ul{
+       flex-direction: column !important;
+   }
     nav li {
         display: block;
         margin: 10px 0;
     }
 }
-
-footer {
+footer{
     position: fixed;
     bottom: 0;
     width: 100vw;
-    background-color: #333;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
 }
