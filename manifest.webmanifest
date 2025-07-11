@@ -1,45 +1,102 @@
 {
-  "name": "RKO Downloader",
+  "name": "RKO Downloader - Download Videos Seamlessly",
   "short_name": "RKO Downloader",
-  "description": "All in one Video Downloader - Download videos from Facebook, Twitter, YouTube, TikTok, and 1000+ other sites. Made by RKO BRO",
+  "description": "Download videos from YouTube, Instagram, TikTok, Facebook and 1000+ other platforms",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#007bff",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#9e0cf2",
+  "id": "rko-downloader-pwa",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "./logo.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png",
-      "sizes": "192x192",
+      "src": "./logo.png",
+      "sizes": "72x72",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "RKO Downloader on mobile"
+      "purpose": "any"
     },
     {
-      "src": "https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png",
+      "src": "./logo.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "form_factor": "wide",
-      "label": "RKO Downloader on desktop"
+      "purpose": "any"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "share_target": {
-    "action": "/",
+    "action": "/share-handler.html",
     "method": "GET",
     "params": {
-      "url": "url"
+      "url": "shared_url",
+      "text": "shared_text"
     }
-  }
+  },
+  "categories": ["utilities", "productivity", "entertainment"],
+  "lang": "en",
+  "prefer_related_applications": false,
+  "dir": "ltr",
+  "screenshots": [
+    {
+      "src": "./logo.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Download",
+      "short_name": "Download",
+      "description": "Start downloading videos quickly",
+      "url": "/",
+      "icons": [
+        {
+          "src": "./logo.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
 }
