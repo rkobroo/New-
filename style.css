@@ -12,6 +12,8 @@ header {
     color: #fff;
     padding: 15px;
     text-align: center;
+    border: 2px solid #ff0000;
+    animation: rgbBorder 2.5s linear infinite;
 }
 
 nav ul {
@@ -49,19 +51,35 @@ nav a {
 }
 
 #downloadBtn {
-    padding: 10px;
+    padding: 12px;
     cursor: pointer;
     background-color: #007bff;
     color: #fff;
     border: none;
-    width:100%;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
 }
 
-#downloadBtn:hover {
+#downloadBtn:hover:not(:disabled) {
     background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+#downloadBtn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#downloadBtn:active {
+    transform: translateY(1px);
 }
 #download{
     display:flex;
@@ -74,6 +92,8 @@ nav a {
     text-align: center;
     display: none;
     margin-top: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
 }
 
 #loading p {
@@ -90,6 +110,32 @@ nav a {
     padding: 20px;
     background-color: #fff;
     border-radius: 10px;
+    border: 3px solid #ff0000;
+    animation: rgbBorder 3s linear infinite;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease-in-out;
+}
+
+#container.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Error container styling */
+#error {
+    display: none;
+    background: linear-gradient(135deg, #f44336, #da190b);
+    color: white;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    border: 2px solid #ff0000;
+    animation: rgbBorder 2s linear infinite;
+    text-align: center;
+    font-weight: bold;
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
 }
 
 #thumb img{
@@ -108,6 +154,14 @@ nav a {
     cursor: pointer;
     min-width: 150px;  /* Fixed width */
     transition: background-color 0.3s;
+    border: 2px solid #ff0000;
+    animation: rgbBorder 2s linear infinite;
+}
+
+.dlbtns:hover {
+    animation-duration: 1s;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 .centerV {
   height: auto;
@@ -121,6 +175,10 @@ nav a {
     color: white;
     font-weight:bold;
     margin-bottom:80px;
+    border: 2px solid #ff0000;
+    animation: rgbBorder 3.5s linear infinite;
+    border-radius: 10px;
+    padding: 15px;
 }
 .wave {
   width: 5px;
@@ -196,4 +254,239 @@ footer{
     position: fixed;
     bottom: 0;
     width: 100vw;
+}
+
+/* RGB Border Animation Keyframes */
+@keyframes rgbBorder {
+    0% { 
+        border-color: #ff0000; 
+        box-shadow: 0 0 20px #ff0000, inset 0 0 20px rgba(255, 0, 0, 0.2);
+    }
+    16% { 
+        border-color: #ff8000; 
+        box-shadow: 0 0 20px #ff8000, inset 0 0 20px rgba(255, 128, 0, 0.2);
+    }
+    33% { 
+        border-color: #ffff00; 
+        box-shadow: 0 0 20px #ffff00, inset 0 0 20px rgba(255, 255, 0, 0.2);
+    }
+    50% { 
+        border-color: #00ff00; 
+        box-shadow: 0 0 20px #00ff00, inset 0 0 20px rgba(0, 255, 0, 0.2);
+    }
+    66% { 
+        border-color: #0080ff; 
+        box-shadow: 0 0 20px #0080ff, inset 0 0 20px rgba(0, 128, 255, 0.2);
+    }
+    83% { 
+        border-color: #8000ff; 
+        box-shadow: 0 0 20px #8000ff, inset 0 0 20px rgba(128, 0, 255, 0.2);
+    }
+    100% { 
+        border-color: #ff0080; 
+        box-shadow: 0 0 20px #ff0080, inset 0 0 20px rgba(255, 0, 128, 0.2);
+    }
+}
+
+/* Apply RGB animation to main input */
+#inputUrl {
+    border: 3px solid #ff0000;
+    animation: rgbBorder 2s linear infinite;
+}
+
+#inputUrl:focus {
+    animation-duration: 1s;
+}
+
+/* Apply RGB animation to download button */
+#downloadBtn {
+    border: 2px solid #ff0000;
+    animation: rgbBorder 2.5s linear infinite;
+}
+
+#downloadBtn:hover {
+    animation-duration: 1s;
+}
+
+/* Popup Modal Styles */
+.popup-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.popup-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.5s ease-out;
+    width: 85%;
+    max-width: 350px;
+    border: 3px solid #ff0000;
+    animation: slideIn 0.5s ease-out, rgbBorder 3s linear infinite;
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.popup-header h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+    color: #ff6b6b;
+}
+
+.popup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input-container {
+    position: relative;
+}
+
+.popup-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+    animation: rgbBorder 2s linear infinite;
+}
+
+.popup-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.popup-input:focus {
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.2);
+    animation: rgbBorder 1s linear infinite;
+}
+
+.button-container {
+    display: flex;
+    gap: 15px;
+}
+
+.popup-btn {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #ff0000;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    animation: rgbBorder 2.5s linear infinite;
+}
+
+.paste-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.paste-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    animation: rgbBorder 1s linear infinite;
+}
+
+.search-btn {
+    background: #f44336;
+    color: white;
+}
+
+.search-btn:hover {
+    background: #da190b;
+    transform: translateY(-2px);
+    animation: rgbBorder 1s linear infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+}
+
+.popup-modal.closing .popup-content {
+    animation: slideOut 0.3s ease-in;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .popup-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .popup-header h3 {
+        font-size: 1.3rem;
+    }
+
+    .button-container {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
