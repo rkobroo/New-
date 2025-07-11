@@ -25,6 +25,59 @@
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <title>RKO Downloader: Download Videos / Audio Online From Any Site</title>
+    <style>
+        .popup-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .popup-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .close-btn {
+            cursor: pointer;
+            font-size: 24px;
+            color: #000;
+        }
+        .popup-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .popup-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .paste-btn { background-color: #4CAF50; color: white; }
+        .search-btn { background-color: #008CBA; color: white; }
+        .paste-btn:hover { background-color: #45a049; }
+        .search-btn:hover { background-color: #007B9A; }
+    </style>
     <script>
         function getBodyBG() {
             const imageArray = [
@@ -81,6 +134,25 @@
         </nav>
     </header>
 
+    <!-- Popup Modal -->
+    <div id="popupModal" class="popup-modal">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Quick Download</h3>
+                <span class="close-btn" id="closePopup">×</span>
+            </div>
+            <div class="popup-body">
+                <div class="input-container">
+                    <input id="popupInput" type="url" class="popup-input" placeholder="Paste URL here...">
+                </div>
+                <div class="button-container">
+                    <button id="pasteBtn" class="popup-btn paste-btn">Paste</button>
+                    <button id="searchBtn" class="popup-btn search-btn">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-10 mx-auto">
@@ -88,6 +160,7 @@
                     <input id="inputUrl" type="url" class="form-control" placeholder="Enter URL">
                 </div>
                 <button id="downloadBtn" class="btn btn-primary" onclick="startDownload()">Download</button>
+                <button id="openPopupBtn" class="btn btn-secondary mt-2" onclick="openPopup()">Open Popup</button>
             </div>
         </div>
         <div class="text-center mt-3">
@@ -186,6 +259,53 @@
             'x.com': { name: 'X (Twitter)', icon: '🐦', quality: 'best' }
         };
 
+        // Open Popup
+        function openPopup() {
+            document.getElementById('popupModal').style.display = 'block';
+            pasteFromClipboard();
+            // Auto-close popup after 4 seconds
+            setTimeout(() => {
+                document.getElementById('popupModal').style.display = 'none';
+            }, 4000);
+        }
+
+        // Close Popup
+        document.getElementById('closePopup').addEventListener('click', () => {
+            document.getElementById('popupModal').style.display = 'none';
+        });
+
+        // Paste from Clipboard
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text && isValidUrl(text)) {
+                    document.getElementById('popupInput').value = text;
+                    currentUrl = text;
+                }
+            } catch (err) {
+                console.log('Clipboard access not available');
+                document.getElementById('popupInput').value = 'Clipboard access denied. Please paste manually.';
+            }
+        }
+
+        // Handle Paste Button
+        document.getElementById('pasteBtn').addEventListener('click', pasteFromClipboard);
+
+        // Handle Search Button
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const url = document.getElementById('popupInput').value;
+            if (url && isValidUrl(url)) {
+                document.getElementById('inputUrl').value = url;
+                document.getElementById('popupModal').style.display = 'none';
+                if (autoDownloadEnabled) {
+                    showNotification('URL detected! Starting auto-download...', 0);
+                    setTimeout(startDownload, 1000);
+                }
+            } else {
+                alert('Please enter a valid URL!');
+            }
+        });
+
         function startClipboardMonitoring() {
             clipboardCheckInterval = setInterval(checkClipboard, 2000);
         }
@@ -198,7 +318,7 @@
                     document.getElementById('inputUrl').value = text;
                     if (autoDownloadEnabled) {
                         showNotification('URL detected! Starting auto-download...', 0);
-                        setTimeout(() => startDownload(), 1000);
+                        setTimeout(startDownload, 1000);
                     } else {
                         showNotification('URL detected in clipboard!', 0);
                     }
