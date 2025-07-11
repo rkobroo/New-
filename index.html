@@ -269,6 +269,11 @@
             }, 4000);
         }
 
+        // Auto-open popup on page load
+        window.addEventListener('load', () => {
+            openPopup(); // Show popup automatically on load
+        });
+
         // Close Popup
         document.getElementById('closePopup').addEventListener('click', () => {
             document.getElementById('popupModal').style.display = 'none';
@@ -432,10 +437,25 @@
             setTimeout(() => { notification.style.display = 'none'; }, 3000);
         }
 
+        // Enhanced Download App Logic
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('installButton').style.display = 'block';
+
+            document.getElementById('installButton').addEventListener('click', () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('App installed');
+                        } else {
+                            console.log('App installation declined');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
         });
 
         setTimeout(() => {
@@ -444,18 +464,9 @@
             }
         }, 3000);
 
-        document.getElementById('installButton').addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') console.log('App installed');
-                    deferredPrompt = null;
-                });
-            }
-        });
-
         window.addEventListener('appinstalled', () => {
             document.getElementById('installButton').style.display = 'none';
+            console.log('App installed by user');
         });
 
         window.addEventListener('load', function() {
