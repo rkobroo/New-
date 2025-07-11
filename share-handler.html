@@ -1,0 +1,485 @@
+` tags.
+
+```html
+<replit_final_file>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RKO Downloader - Share Handler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .popup-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.3s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .app-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .app-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .clipboard-section {
+            margin-bottom: 25px;
+        }
+
+        .clipboard-status {
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .clipboard-url {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            word-break: break-all;
+            font-size: 14px;
+            min-height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .clipboard-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+        }
+
+        .btn-primary:hover {
+            background: #45a049;
+        }
+
+        .btn-secondary {
+            background: #2196F3;
+        }
+
+        .btn-secondary:hover {
+            background: #1976D2;
+        }
+
+        .auto-download-section {
+            margin-bottom: 25px;
+        }
+
+        .auto-download-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-slider {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+        }
+
+        .platform-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .platform-icon {
+            font-size: 18px;
+        }
+
+        .download-progress {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .notification-style {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-style" id="notification">
+        <div id="notificationText">Processing...</div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="notificationProgress"></div>
+        </div>
+    </div>
+
+    <div class="popup-container" id="popupContainer">
+        <span class="close-btn" onclick="closePopup()">&times;</span>
+
+        <div class="header">
+            <div class="app-icon">🎥</div>
+            <div class="app-name">RKO Downloader</div>
+            <div class="subtitle">Shared content detected</div>
+        </div>
+
+        <div class="clipboard-section">
+            <div class="clipboard-status" id="clipboardStatus">Checking shared content...</div>
+            <div class="clipboard-url" id="clipboardUrl"></div>
+            <div class="clipboard-actions">
+                <button class="btn btn-secondary" id="refreshClipboard">🔄 Refresh</button>
+                <button class="btn btn-secondary" id="manualPaste">📋 Paste</button>
+            </div>
+        </div>
+
+        <div class="auto-download-section">
+            <div class="auto-download-toggle">
+                <span>Auto Download (High Quality)</span>
+                <div class="toggle-switch" id="autoDownloadToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="platform-info" id="platformInfo">
+                <span class="platform-icon">🌐</span>
+                <span id="detectedPlatform">Detecting platform...</span>
+            </div>
+        </div>
+
+        <div class="download-progress" id="downloadProgress">
+            <div id="progressText">Preparing download...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="btn btn-primary" id="downloadBtn">🎬 Download Now</button>
+        </div>
+    </div>
+
+    <script>
+        let clipboardCheckInterval;
+        let autoDownloadEnabled = localStorage.getItem('autoDownloadEnabled') === 'true';
+        let currentUrl = '';
+
+        // Platform detection
+        const platforms = {
+            'youtube.com': { name: 'YouTube', icon: '🎬' },
+            'youtu.be': { name: 'YouTube', icon: '🎬' },
+            'tiktok.com': { name: 'TikTok', icon: '🎵' },
+            'vt.tiktok.com': { name: 'TikTok', icon: '🎵' },
+            'instagram.com': { name: 'Instagram', icon: '📸' },
+            'facebook.com': { name: 'Facebook', icon: '📘' },
+            'twitter.com': { name: 'Twitter', icon: '🐦' },
+            'x.com': { name: 'X (Twitter)', icon: '🐦' }
+        };
+
+        function showNotification(text, progress = 0) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            const progressBar = document.getElementById('notificationProgress');
+
+            notificationText.textContent = text;
+            progressBar.style.width = progress + '%';
+            notification.style.display = 'block';
+
+            setTimeout(hideNotification, 3000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification').style.display = 'none';
+        }
+
+        function closePopup() {
+            if (clipboardCheckInterval) {
+                clearInterval(clipboardCheckInterval);
+            }
+
+            const container = document.getElementById('popupContainer');
+            container.style.animation = 'slideUp 0.3s ease-out reverse';
+            setTimeout(() => {
+                window.close();
+                window.location.href = '/';
+            }, 300);
+        }
+
+        function detectPlatform(url) {
+            for (const [domain, info] of Object.entries(platforms)) {
+                if (url.includes(domain)) {
+                    return info;
+                }
+            }
+            return { name: 'Unknown Platform', icon: '🌐' };
+        }
+
+        function updatePlatformInfo(url) {
+            const platform = detectPlatform(url);
+            document.getElementById('detectedPlatform').textContent = platform.name;
+            document.querySelector('.platform-icon').textContent = platform.icon;
+        }
+
+        async function checkSharedContent() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedUrl = urlParams.get('shared_url') || urlParams.get('url');
+            const sharedText = urlParams.get('shared_text') || urlParams.get('text');
+
+            let detectedUrl = sharedUrl || sharedText;
+
+            if (!detectedUrl) {
+                try {
+                    const clipboardText = await navigator.clipboard.readText();
+                    if (clipboardText && isValidUrl(clipboardText)) {
+                        detectedUrl = clipboardText;
+                    }
+                } catch (err) {
+                    console.log('Clipboard access not available');
+                }
+            }
+
+            if (detectedUrl && isValidUrl(detectedUrl)) {
+                currentUrl = detectedUrl;
+                document.getElementById('clipboardUrl').textContent = detectedUrl;
+                document.getElementById('clipboardStatus').textContent = 'Shared content detected:';
+                updatePlatformInfo(detectedUrl);
+
+                if (autoDownloadEnabled) {
+                    startAutoDownload(detectedUrl);
+                }
+            } else {
+                document.getElementById('clipboardStatus').textContent = 'No valid URL detected';
+                document.getElementById('clipboardUrl').textContent = 'Please paste a valid video URL';
+            }
+        }
+
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function startAutoDownload(url) {
+            const progressDiv = document.getElementById('downloadProgress');
+            const progressText = document.getElementById('progressText');
+            const progressFill = document.getElementById('progressFill');
+
+            progressDiv.style.display = 'block';
+
+            try {
+                progressText.textContent = 'Fetching video information...';
+                progressFill.style.width = '20%';
+
+                const response = await fetch(`https://vkrdownloader.xyz/server?api_key=vkrdownloader&vkr=${encodeURIComponent(url)}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch video data');
+                }
+
+                progressText.textContent = 'Processing video...';
+                progressFill.style.width = '50%';
+
+                const data = await response.json();
+
+                progressText.textContent = 'Preparing download...';
+                progressFill.style.width = '80%';
+
+                let downloadUrl = `https://vkrdownloader.xyz/server/dl.php?vkr=${encodeURIComponent(url)}`;
+
+                progressText.textContent = 'Starting download...';
+                progressFill.style.width = '100%';
+
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `RKO_Download_${Date.now()}.mp4`;
+                link.click();
+
+                progressText.textContent = 'Download completed! 🎉';
+                showNotification('Download completed successfully!', 100);
+
+            } catch (error) {
+                console.error('Download error:', error);
+                progressText.textContent = 'Download failed: ' + error.message;
+                showNotification('Download failed: ' + error.message, 0);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSharedContent();
+
+            // Setup toggle
+            const toggle = document.getElementById('autoDownloadToggle');
+            if (autoDownloadEnabled) {
+                toggle.classList.add('active');
+            }
+
+            toggle.addEventListener('click', function() {
+                autoDownloadEnabled = !autoDownloadEnabled;
+                localStorage.setItem('autoDownloadEnabled', autoDownloadEnabled);
+                this.classList.toggle('active');
+                showNotification(autoDownloadEnabled ? 'Auto-download enabled' : 'Auto-download disabled');
+            });
+
+            // Setup buttons
+            document.getElementById('refreshClipboard').addEventListener('click', checkSharedContent);
+
+            document.getElementById('manualPaste').addEventListener('click', async function() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) {
+                        currentUrl = text;
+                        document.getElementById('clipboardUrl').textContent = text;
+                        updatePlatformInfo(text);
+                    }
+                } catch (err) {
+                    alert('Please paste the URL manually');
+                }
+            });
+
+            document.getElementById('downloadBtn').addEventListener('click', function() {
+                if (currentUrl) {
+                    startAutoDownload(currentUrl);
+                } else {
+                    alert('No valid URL detected');
+                }
+            });
+        });
+
+        // Handle Android back button
+        window.addEventListener('popstate', closePopup);
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (clipboardCheckInterval) {
+                clearInterval(clipboardCheckInterval);
+            }
+        });
+    </script>
+</body>
+  </html>
