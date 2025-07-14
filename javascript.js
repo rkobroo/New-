@@ -2,7 +2,6 @@
  * Popup Modal Functionality
  *******************************/
 
-// [Previous popup modal code remains unchanged]
 window.addEventListener('load', function() {
     setTimeout(showPopup, 500);
 });
@@ -305,12 +304,11 @@ function handleSuccessResponse(data, inputUrl) {
 
     if (data.data) {
         const videoData = data.data;
-        console.log('API Response:', videoData); // Debug
-
         const downloadUrls = videoData.downloads.map(download => download.url);
         const videoSource = videoData.source;
         const videoId = getYouTubeVideoIds(videoSource);
         const thumbnailUrl = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : videoData.thumbnail;
+        const description = videoData.description || 'Untitled';
 
         const videoHtml = `
             <video style='background: black url(${thumbnailUrl}) center center/cover no-repeat; width:100%; height:500px; border-radius:20px;' 
@@ -327,16 +325,14 @@ function handleSuccessResponse(data, inputUrl) {
                 ${downloadUrls.map(url => `<source src='${url}' type='video/mp4'>`).join('')}
             </video>`;
         const titleHtml = videoData.title ? `<h3>${sanitizeContent(videoData.title)}</h3>` : "";
-        const descriptionHtml = videoData.description ? `<h4><details><summary>View Description</summary>${sanitizeContent(videoData.description)}</details></h4>` : "";
-        const durationHtml = videoData.size ? `<h5>${sanitizeContent(videoData.size)}</h5>` : "";
+        const descriptionHtml = description ? `<h4><details><summary>View Description</summary>${sanitizeContent(description)}</details></h4>` : "";
 
         if (videoId) updateElement("thumb", YTvideoHtml);
         else updateElement("thumb", videoHtml);
         updateElement("title", titleHtml);
         updateElement("description", descriptionHtml);
-        updateElement("duration", durationHtml);
 
-        generateDownloadButtons(data, inputUrl, videoData.description, videoData.platform || 'Unknown', videoData.author || 'Unknown');
+        generateDownloadButtons(data, inputUrl, description, videoData.platform || 'Unknown', videoData.author || 'Unknown');
     } else {
         displayError("Issue: Unable to retrieve the download link. Please check the URL and contact us on Social Media @himalpaudel112.");
         document.getElementById("loading").style.display = "none";
@@ -345,7 +341,6 @@ function handleSuccessResponse(data, inputUrl) {
 
 async function forceDownload(url, filename) {
     console.log('Force download called:', url, filename);
-
     showDownloadFeedback('Starting download...');
 
     try {
@@ -353,36 +348,39 @@ async function forceDownload(url, filename) {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
         const blob = await response.blob();
-        const downloadUrl = window.URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = filename;
-        link.style.display = 'none';
-
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        setTimeout(() => {
-            window.URL.revokeObjectURL(downloadUrl);
-        }, 1000);
+        const directoryEntry = await new Promise((resolve, reject) => {
+            window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, resolve, reject);
+        });
+        const fileEntry = await new Promise((resolve, reject) => {
+            directoryEntry.root.getFile(filename, { create: true, exclusive: false }, resolve, reject);
+        });
+        const writer = await new Promise((resolve, reject) => {
+            fileEntry.createWriter(resolve, reject);
+        });
+        await new Promise((resolve, reject) => {
+            writer.onwriteend = resolve;
+            writer.onerror = reject;
+            writer.write(blob);
+        });
 
         showDownloadFeedback('Download completed successfully! 🎉');
+
+        // Update history
+        let downloadHistory = JSON.parse(localStorage.getItem('downloadHistory')) || [];
+        downloadHistory.push({ filename, platform: 'Unknown', author: 'Unknown', timestamp: new Date().toISOString() });
+        localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
+        updateHistory();
     } catch (error) {
         console.error('Download error:', error);
+        showDownloadFeedback('Download failed, trying fallback...');
 
         const link = document.createElement("a");
         link.href = url;
         link.download = filename;
         link.style.display = 'none';
-        link.setAttribute('target', '_self');
-
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        showDownloadFeedback('Download initiated via fallback method');
     }
 }
 
@@ -470,6 +468,7 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
         const downloads = videoData.data.downloads;
         const videoSource = videoData.data.source;
         const videoId = getYouTubeVideoIds(videoSource);
+        const sanitizedDescription = (description || 'video').replace(/[<>:"/\\|?*]/g, '').substring(0, 50).trim();
 
         if (videoId) {
             const qualities = [
@@ -481,7 +480,6 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
 
             qualities.forEach(item => {
                 const downloadUrl = `https://vkrdownloader.xyz/server/dl.php?q=${encodeURIComponent(item.quality)}&vkr=${encodeURIComponent(videoSource)}`;
-                const sanitizedDescription = (description || 'video').replace(/[<>:"/\\|?*]/g, '').substring(0, 50).trim();
                 const filename = `${sanitizedDescription}_${item.quality}.${item.quality === 'mp3' ? 'mp3' : 'mp4'}`;
 
                 const button = document.createElement('button');
@@ -491,8 +489,6 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
 
                 button.addEventListener('click', async function(event) {
                     event.preventDefault();
-                    event.stopPropagation();
-
                     this.disabled = true;
                     this.style.opacity = '0.6';
                     this.innerHTML = '⏳ Downloading...';
@@ -506,42 +502,35 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
                         const blob = await response.blob();
                         const objectUrl = window.URL.createObjectURL(blob);
 
-                        const link = document.createElement("a");
-                        link.href = objectUrl;
-                        link.download = filename;
-                        link.style.display = 'none';
+                        // Save to internal storage using Cordova File plugin
+                        const directoryEntry = await new Promise((resolve, reject) => {
+                            window.requestFileSystem(window.TEMPORARY, 5 * 1024 * 1024, resolve, reject);
+                        });
+                        const fileEntry = await new Promise((resolve, reject) => {
+                            directoryEntry.root.getFile(filename, { create: true, exclusive: false }, resolve, reject);
+                        });
+                        const writer = await new Promise((resolve, reject) => {
+                            fileEntry.createWriter(resolve, reject);
+                        });
+                        await new Promise((resolve, reject) => {
+                            writer.onwriteend = resolve;
+                            writer.onerror = reject;
+                            writer.write(blob);
+                        });
 
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        setTimeout(() => {
-                            window.URL.revokeObjectURL(objectUrl);
-                        }, 1000);
+                        showDownloadFeedback(`${item.label} downloaded successfully! 🎉`);
 
                         // Update history
                         downloadHistory.push({ filename: sanitizedDescription, platform, author, timestamp: new Date().toISOString() });
                         localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
                         updateHistory();
 
-                        showDownloadFeedback(`${item.label} downloaded successfully! 🎉`);
                         this.innerHTML = '✅ Downloaded';
                         this.style.background = '#4CAF50';
                     } catch (error) {
                         console.error('Download error:', error);
-
-                        const link = document.createElement("a");
-                        link.href = downloadUrl;
-                        link.download = filename;
-                        link.style.display = 'none';
-                        link.setAttribute('target', '_self');
-
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        showDownloadFeedback(`${item.label} download started via fallback`);
-                        this.innerHTML = '📥 Downloaded';
+                        showDownloadFeedback(`${item.label} download failed`);
+                        this.innerHTML = '📥 Retry';
                     } finally {
                         setTimeout(() => {
                             this.disabled = false;
@@ -571,7 +560,6 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
                 const bgColor = getBackgroundColor(itag);
                 const videoExt = download.format_id;
                 const videoSize = download.size;
-                const sanitizedDescription = (description || 'video').replace(/[<>:"/\\|?*]/g, '').substring(0, 50).trim();
                 const filename = `${sanitizedDescription}.mp4`;
 
                 downloadContainer.innerHTML += `
@@ -604,6 +592,7 @@ function updateHistory() {
     historyList.innerHTML = '';
     downloadHistory.forEach(item => {
         const li = document.createElement('li');
+        li.className = 'list-group-item';
         li.textContent = `${item.filename} - ${item.platform} - ${item.author} - ${new Date(item.timestamp).toLocaleString()}`;
         historyList.appendChild(li);
     });
