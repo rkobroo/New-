@@ -3,7 +3,8 @@
  *******************************/
 
 window.addEventListener('load', function() {
-    setTimeout(showPopup, 500);
+    // Show popup 5 seconds after page load
+    setTimeout(showPopup, 5000);
 });
 
 function showPopup() {
@@ -12,6 +13,7 @@ function showPopup() {
 
     modal.style.display = 'block';
 
+    // Auto-disappear after 5 seconds
     setTimeout(() => {
         closePopup();
     }, 5000);
@@ -50,6 +52,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchBtn = document.getElementById('searchBtn');
     const popupInput = document.getElementById('popupInput');
     const modal = document.getElementById('popupModal');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // Prevent popup from triggering on download button click
+    downloadBtn.addEventListener('click', function(event) {
+        event.stopPropagation(); // Stop event from bubbling to window load or other listeners
+    });
 
     closeBtn.addEventListener('click', closePopup);
 
@@ -143,7 +151,7 @@ function getYouTubeVideoIds(url) {
 }
 
 function sanitizeContent(content) {
-    return DOMPurify.sanitize(content);
+    return DOMPurify.sanitize(content || 'Untitled');
 }
 
 function updateElement(elementId, content) {
@@ -237,9 +245,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById("downloadBtn");
     const loadingElement = document.getElementById("loading");
     const inputUrl = document.getElementById("inputUrl");
+    const installButton = document.getElementById("installButton");
+    const installPopup = document.getElementById("installPopup");
+    const closeInstallPopup = document.getElementById("closeInstallPopup");
+    const cancelInstallBtn = document.getElementById("cancelInstallBtn");
+    const confirmInstallBtn = document.getElementById("confirmInstallBtn");
+    const installProgress = document.getElementById("installProgress");
 
     if (downloadBtn && loadingElement && inputUrl) {
-        downloadBtn.addEventListener("click", debounce(function() {
+        downloadBtn.addEventListener("click", debounce(function(event) {
+            event.stopPropagation(); // Ensure no popup interference
             const errorContainer = document.getElementById("error");
             if (errorContainer) errorContainer.style.display = "none";
 
@@ -275,10 +290,68 @@ document.addEventListener('DOMContentLoaded', function() {
         button.addEventListener('click', () => {
             pages.forEach(page => page.style.display = 'none');
             document.getElementById(button.dataset.page).style.display = 'block';
+            if (button.dataset.page === 'history') {
+                updateHistory();
+            }
         });
     });
     document.getElementById('home').style.display = 'block';
+    updateHistory();
+
+    // Install Popup Logic
+    installButton.addEventListener('click', () => {
+        installPopup.style.display = 'block';
+    });
+
+    closeInstallPopup.addEventListener('click', () => {
+        installPopup.style.display = 'none';
+        if (installProgress.style.display === 'block') resetInstallProgress();
+    });
+
+    cancelInstallBtn.addEventListener('click', () => {
+        installPopup.style.display = 'none';
+        if (installProgress.style.display === 'block') resetInstallProgress();
+    });
+
+    confirmInstallBtn.addEventListener('click', () => {
+        startInstallProcess(installProgress);
+    });
 });
+
+/*******************************
+ * Install Process
+ *******************************/
+
+function startInstallProcess(progressElement) {
+    progressElement.style.display = 'block';
+    let progress = 0;
+    const progressBar = progressElement.querySelector('.progress-bar');
+
+    showDownloadFeedback('Starting installation...');
+
+    const interval = setInterval(() => {
+        if (progress < 100) {
+            progress += 10;
+            progressBar.style.width = `${progress}%`;
+            progressBar.setAttribute('aria-valuenow', progress);
+        } else {
+            clearInterval(interval);
+            showDownloadFeedback('Installation complete! 🎉');
+            setTimeout(() => {
+                progressElement.style.display = 'none';
+                document.getElementById('installPopup').style.display = 'none';
+                resetInstallProgress();
+            }, 1000);
+        }
+    }, 500); // Simulate 5-second install process
+}
+
+function resetInstallProgress() {
+    const progressElement = document.getElementById('installProgress');
+    const progressBar = progressElement.querySelector('.progress-bar');
+    progressBar.style.width = '0%';
+    progressBar.setAttribute('aria-valuenow', 0);
+}
 
 /*******************************
  * Response Handlers
@@ -468,7 +541,7 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
         const downloads = videoData.data.downloads;
         const videoSource = videoData.data.source;
         const videoId = getYouTubeVideoIds(videoSource);
-        const sanitizedDescription = (description || 'video').replace(/[<>:"/\\|?*]/g, '').substring(0, 50).trim();
+        const sanitizedDescription = (description || 'Untitled').replace(/[<>:"/\\|?*]/g, '').substring(0, 50).trim();
 
         if (videoId) {
             const qualities = [
@@ -520,7 +593,7 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
 
                         showDownloadFeedback(`${item.label} downloaded successfully! 🎉`);
 
-                        // Update history
+                        // Update history with proper filename
                         downloadHistory.push({ filename: sanitizedDescription, platform, author, timestamp: new Date().toISOString() });
                         localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
                         updateHistory();
@@ -560,7 +633,7 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
                 const bgColor = getBackgroundColor(itag);
                 const videoExt = download.format_id;
                 const videoSize = download.size;
-                const filename = `${sanitizedDescription}.mp4`;
+                const filename = `${sanitizedDescription}_${videoExt}.mp4`; // Use description + format
 
                 downloadContainer.innerHTML += `
                     <button class='dlbtns' style='background:${bgColor}' 
@@ -568,7 +641,7 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
                         ${sanitizeContent(videoExt)} - ${sanitizeContent(videoSize)}
                     </button>`;
 
-                // Update history for direct downloads
+                // Update history with proper filename
                 downloadHistory.push({ filename: sanitizedDescription, platform, author, timestamp: new Date().toISOString() });
                 localStorage.setItem('downloadHistory', JSON.stringify(downloadHistory));
                 updateHistory();
@@ -588,12 +661,19 @@ function generateDownloadButtons(videoData, inputUrl, description, platform, aut
 // Update history display
 function updateHistory() {
     const historyList = document.getElementById('historyList');
+    if (!historyList) return;
+
     let downloadHistory = JSON.parse(localStorage.getItem('downloadHistory')) || [];
-    historyList.innerHTML = '';
+    historyList.innerHTML = ''; // Clear existing items
+    if (downloadHistory.length === 0) {
+        historyList.innerHTML = '<li class="list-group-item text-center">No downloads yet.</li>';
+        return;
+    }
+
     downloadHistory.forEach(item => {
         const li = document.createElement('li');
         li.className = 'list-group-item';
-        li.textContent = `${item.filename} - ${item.platform} - ${item.author} - ${new Date(item.timestamp).toLocaleString()}`;
+        li.textContent = `${item.filename || 'Unknown'} - ${item.platform || 'Unknown'} - ${item.author || 'Unknown'} - ${new Date(item.timestamp).toLocaleString()}`;
         historyList.appendChild(li);
     });
 }
