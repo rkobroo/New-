@@ -62,6 +62,34 @@
         const styleElement = document.createElement("style");
         styleElement.innerHTML = style;
         document.head.appendChild(styleElement);
+
+        // Add auto download toggle div
+        const toggleDiv = document.createElement("div");
+        toggleDiv.id = "autoDownloadToggle";
+        toggleDiv.style.cssText = `
+            display: none;
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 12px;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+        `;
+        toggleDiv.innerHTML = `
+            <input type="checkbox" id="autoDownloadCheck" style="margin-right: 5px; vertical-align: middle;">
+            <label for="autoDownloadCheck" style="vertical-align: middle;">auto download</label>
+        `;
+        document.body.appendChild(toggleDiv);
+
+        // Show toggle after 10 seconds and hide after 10 more seconds
+        setTimeout(() => {
+            toggleDiv.style.display = 'block';
+            setTimeout(() => {
+                toggleDiv.style.display = 'none';
+            }, 10000); // Disappear after 10 seconds
+        }, 10000); // Appear after 10 seconds
     }
 
     getBodyBG();
