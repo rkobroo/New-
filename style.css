@@ -17,7 +17,7 @@ header {
 }
 
 nav {
-    display: none; /* Hide original nav, replaced by bottom navigation */
+    display: none;
 }
 
 #app {
@@ -241,7 +241,7 @@ nav {
 }
 
 .page {
-    padding-bottom: 80px; /* Space for navigation */
+    padding-bottom: 80px;
 }
 
 /* Download History */
@@ -251,7 +251,7 @@ nav {
     margin: 10px 0;
 }
 
-#historyList li {
+#historyList .list-group-item {
     padding: 10px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
@@ -264,7 +264,7 @@ nav {
     align-items: center;
 }
 
-#historyList li:hover {
+#historyList .list-group-item:hover {
     animation-duration: 1s;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -397,7 +397,7 @@ nav {
     #bottom-navigation { flex-direction: column; padding: 5px 0; }
     .nav-btn { margin: 5px 0; }
     .page { padding-bottom: 100px; }
-    #historyList li { flex-direction: column; text-align: center; }
+    #historyList .list-group-item { flex-direction: column; text-align: center; }
 }
 
 footer {
