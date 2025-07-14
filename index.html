@@ -22,144 +22,165 @@
     <link rel="shortcut icon" href="/VKrDownloader/logo.png" type="image/x-icon">  
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="manifest" href="/manifest.webmanifest"> <!-- Fixed path -->
+    <link rel="manifest" href="/manifest.webmanifest">
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <title>RKO Downloader: Download Videos / Audio Online From Any Site</title>
-    
-    <!--
-        ADS START 
-    -->
-    
-        <!--
-        ADS END
-    -->
-    
 </head>
+
 <script>
     function getBodyBG() {
-    const imageArray = [
-        "https://img3.wallspic.com/crops/6/3/5/8/7/178536/178536-sunset-nature-dusk-water-cloud-1080x2160.jpg",
-        "https://images.pexels.com/photos/2251798/pexels-photo-2251798.jpeg?cs=srgb&dl=pexels-markarronsmith-2251798.jpg&fm=jpg",
-        "https://images.pexels.com/photos/937980/pexels-photo-937980.jpeg?cs=srgb&dl=pexels-kovyrina-937980.jpg&fm=jpg",
-        "https://wallpapercave.com/wp/wp6974666.jpg",
-        "https://www.pngmagic.com/product_images/sunset-hd-nature-background-for-photo-editing_l2f.jpeg",
-        "https://e1.pxfuel.com/desktop-wallpaper/363/258/desktop-wallpaper-a-touch-of-light-here-and-there-best-whatsapp-dp.jpg",
-        "https://images.pexels.com/photos/1707820/pexels-photo-1707820.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-        "https://images.pexels.com/photos/1957693/pexels-photo-1957693.jpeg?cs=srgb&dl=pexels-markusspiske-1957693.jpg&fm=jpg",
-        "https://i.pinimg.com/736x/a6/a2/c4/a6a2c43dd162b80261ad87be1c875965.jpg",
-    ];
+        const imageArray = [
+            "https://img3.wallspic.com/crops/6/3/5/8/7/178536/178536-sunset-nature-dusk-water-cloud-1080x2160.jpg",
+            "https://images.pexels.com/photos/2251798/pexels-photo-2251798.jpeg?cs=srgb&dl=pexels-markarronsmith-2251798.jpg&fm=jpg",
+            "https://images.pexels.com/photos/937980/pexels-photo-937980.jpeg?cs=srgb&dl=pexels-kovyrina-937980.jpg&fm=jpg",
+            "https://wallpapercave.com/wp/wp6974666.jpg",
+            "https://www.pngmagic.com/product_images/sunset-hd-nature-background-for-photo-editing_l2f.jpeg",
+            "https://e1.pxfuel.com/desktop-wallpaper/363/258/desktop-wallpaper-a-touch-of-light-here-and-there-best-whatsapp-dp.jpg",
+            "https://images.pexels.com/photos/1707820/pexels-photo-1707820.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+            "https://images.pexels.com/photos/1957693/pexels-photo-1957693.jpeg?cs=srgb&dl=pexels-markusspiske-1957693.jpg&fm=jpg",
+            "https://i.pinimg.com/736x/a6/a2/c4/a6a2c43dd162b80261ad87be1c875965.jpg",
+        ];
 
-    if (imageArray.length === 0) {
-        return null; // Return null if the array is empty
+        if (imageArray.length === 0) return null;
+
+        const randomKey = Math.floor(Math.random() * imageArray.length);
+        const bbgimg = imageArray[randomKey];
+
+        const style = `
+            body {
+                background-image: url('${bbgimg}');
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-position: center;
+                min-height: 100vh;
+                margin: 0;
+                padding: 0;
+            }
+        `;
+
+        const styleElement = document.createElement("style");
+        styleElement.innerHTML = style;
+        document.head.appendChild(styleElement);
     }
 
-    const randomKey = Math.floor(Math.random() * imageArray.length); // Get a random index
-    const bbgimg = imageArray[randomKey]; // Retrieve the corresponding URL
-
-    // Apply the selected background image to the body
-    const style = `
-        body {
-    background-image: url('${bbgimg}');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    min-height: 100vh;
-    margin: 0; 
-    padding: 0; 
-        }
-    `;
-
-    // Append the style to the document head
-    const styleElement = document.createElement("style");
-    styleElement.innerHTML = style;
-    document.head.appendChild(styleElement);
-}
-
-// Call the function to set the background
-getBodyBG();
+    getBodyBG();
 </script>
+
 <body>
-    <header class="bg-dark text-white">
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="#"><img src="https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png" style="width:40px; height:40px;border-radius:10px;box-shadow:3px 3px 10px yellow;"></a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active"><a class="nav-link" href="/VKrDownloader">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="rkobro112@gmail.com">Service</a></li>
-                    <li class="nav-item"><a class="nav-link" href="https://www.instagram.com/himalpaudel112/profilecard/?igsh=ZHl5MGlra2c5eDdw">Follow</a></li>
-                    <li class="nav-item"><a class="nav-link" href="https://www.facebook.com/profile.php?id=100084573213 Hawkins213860"></a>
-                </ul>
-            </div>
-        </nav>
-    </header>
+    <div id="app">
+        <div id="content">
+            <!-- Home Content -->
+            <div id="home" class="page">
+                <header class="bg-dark text-white">
+                    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                        <a class="navbar-brand" href="#"><img src="https://raw.githubusercontent.com/theofficialvkr/VKrDownloader/refs/heads/main/logo.png" style="width:40px; height:40px;border-radius:10px;box-shadow:3px 3px 10px yellow;"></a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav ml-auto">
+                                <li class="nav-item active"><a class="nav-link" href="/VKrDownloader">Home</a></li>
+                                <li class="nav-item"><a class="nav-link" href="rkobro112@gmail.com">Service</a></li>
+                                <li class="nav-item"><a class="nav-link" href="https://www.instagram.com/himalpaudel112/profilecard/?igsh=ZHl5MGlra2c5eDdw">Follow</a></li>
+                                <li class="nav-item"><a class="nav-link" href="https://www.facebook.com/profile.php?id=100084573213 Hawkins213860"></a>
+                            </ul>
+                        </div>
+                    </nav>
+                </header>
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-10 mx-auto">
-                <div class="form-group">
-                    <input id="inputUrl" type="url" class="form-control" placeholder="Enter URL">
+                <div class="container mt-5">
+                    <div class="row">
+                        <div class="col-md-10 mx-auto">
+                            <div class="form-group">
+                                <input id="inputUrl" type="url" class="form-control" placeholder="Enter URL">
+                            </div>
+                            <button id="downloadBtn" type="submit" class="btn btn-primary">Download</button>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button id="installButton" class="btn btn-primary">Download App</button>
+                        <p id="installMessage" style="display: none; color: #666; margin-top: 10px;">To install, open in Chrome or Safari and tap "Add to Home Screen."</p>
+                    </div>
+                    <div id="loading" class="text-center mt-3" style="display: none;">
+                        <div class="centerV">
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                        </div>
+                    </div>
+
+                    <div id="container" class="text-center mt-3" style="display: none;">
+                        <div id="thumb" class="mb-3"></div>
+                        <div id="title"></div>
+                        <div id="description" class="mt-3"></div>
+                        <div id="uploader"></div>
+                        <div id="duration"></div>
+                        <div id="extractor"></div>
+                        <div id="downloadURL"></div>
+                        <div id="download"></div>
+                    </div>
+
+                    <div id="content" class="text-center mt-5 p-4" style="background-color: #150707c7; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                        <h2 style="font-weight: 700; color: #fff;">RKO Downloader - Download Videos Seamlessly</h2>
+                        <p style="font-size: 1.1rem; color: #fff; margin-top: 10px;">
+                            RKO Downloader by RKO BRO is your ultimate tool for downloading online videos, thumbnails, and music. It's fast, free, and hassle-free!
+                        </p>
+                        <hr style="margin: 20px 0; border-top: 1px solid #ddd;">
+                        <h4 style="font-weight: 600; color: #c2c0c0;">Download from Your Favorite Platforms:</h4>
+                        <ul style="list-style: none; padding: 0; font-size: 1rem; color: #e6e0e0; line-height: 1.8;">
+                            <li>🎥 YouTube</li>
+                            <li>📘 Facebook</li>
+                            <li>🐦 Twitter</li>
+                            <li>📸 Instagram (Reels)</li>
+                            <li>🎵 TikTok</li>
+                            <li>🌐 1000+ other websites</li>
+                        </ul>
+                        <p style="font-size: 1rem; color: #eae4e4; margin-top: 15px;">
+                            Supports all audio and video qualities for the best experience.
+                        </p>
+                    </div>
                 </div>
-                <button id="downloadBtn" type="submit" class="btn btn-primary">Download</button>
+            </div>
+            <!-- Download History Content -->
+            <div id="history" class="page" style="display: none;">
+                <div class="container mt-5">
+                    <h1 class="text-center text-white">Download History</h1>
+                    <ul id="historyList" class="list-group mt-3"></ul>
+                </div>
             </div>
         </div>
-        <div class="text-center mt-3">
-            <button id="installButton" class="btn btn-primary">Download App</button>
-            <p id="installMessage" style="display: none; color: #666; margin-top: 10px;">To install, open in Chrome or Safari and tap "Add to Home Screen."</p>
+        <!-- Bottom Navigation -->
+        <div id="bottom-navigation">
+            <button class="nav-btn" data-page="home">Home</button>
+            <button class="nav-btn" data-page="history">History</button>
         </div>
-        <div id="loading" class="text-center mt-3" style="display: none;">
-            <div class="centerV">
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
-                <div class="wave"></div>
+
+        <!-- Popup Modal -->
+        <div id="popupModal" class="modal">
+            <div class="modal-content">
+                <span id="closePopup" class="close">×</span>
+                <h2 class="text-white">Paste Video URL</h2>
+                <input type="text" id="popupInput" class="form-control" placeholder="Paste URL here">
+                <div class="button-container mt-3">
+                    <button id="pasteBtn" class="btn btn-success">Paste</button>
+                    <button id="searchBtn" class="btn btn-danger">Search</button>
+                </div>
             </div>
-        </div>
-
-        <div id="container" class="text-center mt-3" style="display: none;">
-            <div id="thumb" class="mb-3"></div>
-            <div id="title"></div>
-            <div id="description" class="mt-3"></div>
-            <div id="uploader"></div>
-            <div id="duration"></div>
-            <div id="extractor"></div>
-            <div id="downloadURL"></div>
-            <div id="download"></div>
-        </div>
-
-        <div id="content" class="text-center mt-5 p-4" style="background-color: #150707c7; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <h2 style="font-weight: 700; color: #fff;">RKO Downloader - Download Videos Seamlessly</h2>
-            <p style="font-size: 1.1rem; color: #fff; margin-top: 10px;">
-                RKO Downloader by RKO BRO is your ultimate tool for downloading online videos, thumbnails, and music. It's fast, free, and hassle-free!
-            </p>
-            <hr style="margin: 20px 0; border-top: 1px solid #ddd;">
-            <h4 style="font-weight: 600; color: #c2c0c0;">Download from Your Favorite Platforms:</h4>
-            <ul style="list-style: none; padding: 0; font-size: 1rem; color: #e6e0e0; line-height: 1.8;">
-                <li>🎥 YouTube</li>
-                <li>📘 Facebook</li>
-                <li>🐦 Twitter</li>
-                <li>📸 Instagram (Reels)</li>
-                <li>🎵 TikTok</li>
-                <li>🌐 1000+ other websites</li>
-            </ul>
-            <p style="font-size: 1rem; color: #eae4e4; margin-top: 15px;">
-                Supports all audio and video qualities for the best experience.
-            </p>
         </div>
     </div>
-    <br>
+
     <footer class="bg-dark text-white text-center py-3 mt-10">
         Powered By Himal (RKO BRO)
     </footer>
+
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').then(() => {
@@ -175,14 +196,12 @@ getBodyBG();
     <script>
         let deferredPrompt;
 
-        // Listen for the browser's install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
             document.getElementById('installButton').style.display = 'block';
         });
 
-        // Show a message if the install prompt isn't available
         setTimeout(() => {
             if (!deferredPrompt) {
                 document.getElementById('installButton').style.display = 'none';
@@ -190,7 +209,6 @@ getBodyBG();
             }
         }, 3000);
 
-        // Trigger the install prompt when the button is clicked
         document.getElementById('installButton').addEventListener('click', () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
@@ -203,7 +221,6 @@ getBodyBG();
             }
         });
 
-        // Hide the button after installation
         window.addEventListener('appinstalled', () => {
             document.getElementById('installButton').style.display = 'none';
             document.getElementById('installMessage').style.display = 'none';
@@ -211,4 +228,4 @@ getBodyBG();
     </script>
 </body>
 
-                                                      </html>
+</html>
