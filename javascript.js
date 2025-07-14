@@ -5,6 +5,8 @@
 window.addEventListener('load', function() {
     // Show popup 5 seconds after page load
     setTimeout(showPopup, 5000);
+    // Show auto download toggle 10 seconds after page load
+    setTimeout(showAutoDownloadToggle, 10000);
 });
 
 function showPopup() {
@@ -53,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const popupInput = document.getElementById('popupInput');
     const modal = document.getElementById('popupModal');
     const downloadBtn = document.getElementById('downloadBtn');
+    const autoDownloadCheck = document.getElementById('autoDownloadCheck');
 
     // Prevent popup from triggering on download button click
     downloadBtn.addEventListener('click', function(event) {
@@ -72,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const text = await navigator.clipboard.readText();
             popupInput.value = text;
             popupInput.focus();
+            checkAndAutoDownload(text); // Check for auto download
         } catch (err) {
             popupInput.focus();
             alert('Please paste the URL manually using Ctrl+V');
@@ -96,7 +100,59 @@ document.addEventListener('DOMContentLoaded', function() {
             searchBtn.click();
         }
     });
+
+    // Auto download toggle behavior
+    let autoDownloadEnabled = false;
+    autoDownloadCheck.addEventListener('change', function() {
+        autoDownloadEnabled = this.checked;
+        localStorage.setItem('autoDownloadEnabled', autoDownloadEnabled);
+        if (autoDownloadEnabled) {
+            checkClipboardForAutoDownload();
+        }
+    });
+
+    // Initialize from localStorage
+    const storedAutoDownload = localStorage.getItem('autoDownloadEnabled');
+    if (storedAutoDownload === 'true') {
+        autoDownloadCheck.checked = true;
+        autoDownloadEnabled = true;
+        checkClipboardForAutoDownload();
+    }
 });
+
+function showAutoDownloadToggle() {
+    const toggle = document.getElementById('autoDownloadToggle');
+    toggle.style.display = 'block';
+    setTimeout(() => {
+        toggle.style.display = 'none';
+    }, 10000); // Disappear after 10 seconds
+}
+
+function checkClipboardForAutoDownload() {
+    if (!document.getElementById('autoDownloadCheck').checked) return;
+
+    setInterval(async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            checkAndAutoDownload(text);
+        } catch (err) {
+            console.log('Clipboard access not available or denied');
+        }
+    }, 5000); // Check every 5 seconds
+}
+
+function checkAndAutoDownload(url) {
+    const autoDownloadCheck = document.getElementById('autoDownloadCheck');
+    if (!autoDownloadCheck.checked || !url) return;
+
+    const videoId = getYouTubeVideoIds(url);
+    if (videoId) {
+        const highResUrl = `https://vkrdownloader.xyz/server/dl.php?q=1080&vkr=https://youtu.be/${videoId}`;
+        forceDownload(highResUrl, `${videoId}_1080.mp4`);
+    } else if (url.includes('http://') || url.includes('https://') || url.includes('www.')) {
+        makeRequest(url, 4, true); // Auto download with high resolution
+    }
+}
 
 /*******************************
  * Configuration for Colors
@@ -172,7 +228,7 @@ function getParameterByName(name, url) {
  * AJAX Request with Retry Logic
  *******************************/
 
-function makeRequest(inputUrl, retries = 4) {
+function makeRequest(inputUrl, retries = 4, autoDownload = false) {
     const requestUrl = `https://vkrdownloader.xyz/server?api_key=vkrdownloader&vkr=${encodeURIComponent(inputUrl)}`;
     const retryDelay = 2000;
 
@@ -185,13 +241,13 @@ function makeRequest(inputUrl, retries = 4) {
         dataType: 'json',
         timeout: 15000,
         success: function(data) {
-            handleSuccessResponse(data, inputUrl);
+            handleSuccessResponse(data, inputUrl, autoDownload);
         },
         error: function(xhr, status, error) {
             if (retries > 0) {
                 let delay = retryDelay * Math.pow(2, 4 - retries);
                 console.log(`Retrying in ${delay / 1000} seconds... (${retries} attempts left)`);
-                setTimeout(() => makeRequest(inputUrl, retries - 1), delay);
+                setTimeout(() => makeRequest(inputUrl, retries - 1, autoDownload), delay);
             } else {
                 const errorMessage = getErrorMessage(xhr, status, error);
                 console.error(`Error Details: ${errorMessage}`);
@@ -357,7 +413,7 @@ function resetInstallProgress() {
  * Response Handlers
  *******************************/
 
-function handleSuccessResponse(data, inputUrl) {
+function handleSuccessResponse(data, inputUrl, autoDownload = false) {
     const container = document.getElementById("container");
     const loading = document.getElementById("loading");
 
@@ -406,6 +462,19 @@ function handleSuccessResponse(data, inputUrl) {
         updateElement("description", descriptionHtml);
 
         generateDownloadButtons(data, inputUrl, description, videoData.platform || 'Unknown', videoData.author || 'Unknown');
+
+        // Auto download highest resolution if enabled
+        if (autoDownload) {
+            const highestResDownload = videoData.downloads.reduce((highest, current) => {
+                const currentItag = getParameterByName("itag", current.url);
+                const highestItag = getParameterByName("itag", highest.url);
+                return formatColors.blueFormats.includes(currentItag) && (!highestItag || currentItag > highestItag) ? current : highest;
+            }, videoData.downloads[0]);
+            if (highestResDownload && highestResDownload.url) {
+                const filename = `${(description || 'Untitled').replace(/[<>:"/\\|?*]/g, '').substring(0, 50).trim()}_${getParameterByName("itag", highestResDownload.url)}.mp4`;
+                forceDownload(highestResDownload.url, filename);
+            }
+        }
     } else {
         displayError("Issue: Unable to retrieve the download link. Please check the URL and contact us on Social Media @himalpaudel112.");
         document.getElementById("loading").style.display = "none";
